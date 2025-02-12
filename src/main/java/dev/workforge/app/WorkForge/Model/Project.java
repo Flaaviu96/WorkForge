@@ -20,7 +20,7 @@ public class Project {
     private String projectDescription;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
-    Set<Task> taskSet = new HashSet<>();
+    private final Set<Task> taskSet = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "workflow_id")
