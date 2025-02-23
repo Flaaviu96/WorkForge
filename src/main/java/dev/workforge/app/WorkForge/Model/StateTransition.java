@@ -1,6 +1,5 @@
 package dev.workforge.app.WorkForge.Model;
 
-import dev.workforge.app.WorkForge.Trigger.Trigger;
 import jakarta.persistence.*;
 import lombok.Data;
 

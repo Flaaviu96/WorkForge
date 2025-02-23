@@ -6,14 +6,20 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = (TaskMapper.class))
 public interface ProjectMapper {
 
     ProjectMapper INSTANCE = Mappers.getMapper(ProjectMapper.class);
 
-    @Mapping(target = "tasks", source = "tasks")
+    @Mapping(target = "taskDTOS", source = "tasks")
     ProjectDTO toDTOWithTasks(Project project);
 
-    @Mapping(target = "tasks", ignore = true)
+    @Mapping(target = "taskDTOS", ignore = true)
     ProjectDTO toDTOWithoutTasks(Project project);
+
+    @Mapping(target = "tasks", source = "taskDTOS")
+    Project toProjectWithTasks(ProjectDTO projectDTO);
+
+    @Mapping(target = "tasks", ignore = true)
+    Project toProjectWithoutTasks(ProjectDTO projectDTO);
 }

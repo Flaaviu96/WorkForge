@@ -19,8 +19,8 @@ public class Workflow {
     private String description;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "workflow", cascade = CascadeType.MERGE, orphanRemoval = true)
-    private Set<StateTransition> stateTransitionSet;
+    private Set<StateTransition> stateTransitions;
 
     @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Project> projectSet;
+    private Set<Project> projects;
 }

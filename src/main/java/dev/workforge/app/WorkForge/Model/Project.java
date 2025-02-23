@@ -20,10 +20,14 @@ public class Project {
     private String projectDescription;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
-    private final Set<Task> taskSet = new HashSet<>();
+    private Set<Task> tasks = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "workflow_id")
     private Workflow workflow;
+
+    public Set<Task> getTasks() {
+        return tasks;
+    }
 
 }

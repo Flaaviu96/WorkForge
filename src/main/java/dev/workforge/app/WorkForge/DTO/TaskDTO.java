@@ -17,8 +17,6 @@ public class TaskDTO implements DTO{
 
     private Set<CommentDTO> commentDTOS;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id")
     private Project project;
 
     @Embedded

@@ -13,10 +13,10 @@ public class Attachment {
     private long id;
 
     private String fileName;
+
     private String fileType;
 
-    @Lob
-    private byte[] data;
+    private String path;
 
     @ManyToOne
     @JoinColumn(name = "task_id")

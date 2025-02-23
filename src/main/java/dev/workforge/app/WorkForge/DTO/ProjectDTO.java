@@ -3,6 +3,7 @@ package dev.workforge.app.WorkForge.DTO;
 import java.util.HashSet;
 import java.util.Set;
 
+
 public class ProjectDTO implements DTO{
     private long id;
 
@@ -13,4 +14,9 @@ public class ProjectDTO implements DTO{
     private final Set<TaskDTO> taskDTOS = new HashSet<>();
 
     private WorkflowDTO workflowDTO;
+
+    public Set<TaskDTO> getTaskDTOS() {
+        return taskDTOS;
+    }
+
 }
