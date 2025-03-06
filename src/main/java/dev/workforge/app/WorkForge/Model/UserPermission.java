@@ -16,7 +16,7 @@ public class UserPermission {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private AppUser user;
 
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)

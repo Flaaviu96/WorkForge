@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
-    @Query("SELECT p from Project p" +
-            "JOIN FETCH p.tasks t"  +
-            "LEFT JOIN FETCH t.comments c" +
+    @Query("SELECT p FROM Project p " +
+            "LEFT JOIN FETCH p.tasks t " +
+            "LEFT JOIN FETCH t.comments c " +
             "WHERE p.id = :projectId")
     Optional<Project> findTasksWithCommentsByProjectId(long projectId);
 }

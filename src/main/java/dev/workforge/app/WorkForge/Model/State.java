@@ -30,4 +30,20 @@ public class State {
     public int hashCode() {
         return Objects.hash(id, name, stateType);
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public StateType getStateType() {
+        return stateType;
+    }
+
+    public void setStateType(StateType stateType) {
+        this.stateType = stateType;
+    }
 }
