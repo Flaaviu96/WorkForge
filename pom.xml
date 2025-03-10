@@ -51,7 +51,6 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.24</version> <!-- Make sure this is at least 1.18.22 or higher -->
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -86,6 +85,7 @@
 
 	<build>
 		<plugins>
+			<!-- Maven Compiler Plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -93,20 +93,38 @@
 					<source>17</source> <!-- Match Java version -->
 					<target>17</target> <!-- Match Java version -->
 					<annotationProcessorPaths>
+						<!-- MapStruct Processor -->
 						<path>
 							<groupId>org.mapstruct</groupId>
 							<artifactId>mapstruct-processor</artifactId>
-							<version>1.6.3</version> <!-- Version should match MapStruct version -->
+							<version>1.6.3</version> <!-- Ensure this matches MapStruct version -->
 						</path>
+						<!-- Lombok Processor -->
 						<path>
 							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId> <!-- Add Lombok if you’re using it -->
+							<artifactId>lombok</artifactId>
+							<version>1.18.30</version> <!-- Use the latest Lombok version -->
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+
+			<!-- Spring Boot Maven Plugin (Excluding Lombok) -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
 
 
 </project>

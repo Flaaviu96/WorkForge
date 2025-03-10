@@ -28,8 +28,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
     private void transferPermission(UserDetails userDetails, List<UserPermissionProjection> userPermissionList) {
         for (UserPermissionProjection userPermission : userPermissionList) {
-            ((SecurityUser) userDetails).getPermissionMap().computeIfAbsent(userPermission.getProjectKey(), k -> new HashSet<>())
-                    .add(userPermission.getPermission());
+            ((SecurityUser) userDetails).addPermission(userPermission.getProjectKey(), userPermission.getPermission());
         }
     }
 }

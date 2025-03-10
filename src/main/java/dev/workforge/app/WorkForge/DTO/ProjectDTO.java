@@ -1,22 +1,14 @@
 package dev.workforge.app.WorkForge.DTO;
 
-import java.util.HashSet;
+import lombok.Builder;
+
 import java.util.Set;
 
-
-public class ProjectDTO implements DTO{
-    private long id;
-
-    private String projectName;
-
-    private String projectDescription;
-
-    private final Set<TaskDTO> taskDTOS = new HashSet<>();
-
-    private WorkflowDTO workflowDTO;
-
-    public Set<TaskDTO> getTaskDTOS() {
-        return taskDTOS;
-    }
-
-}
+@Builder
+public record ProjectDTO(
+        long id,
+        String projectName,
+        String projectDescription,
+        Set<TaskDTO> taskDTO,
+        WorkflowDTO workflowDTO
+) {}

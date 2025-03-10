@@ -40,6 +40,10 @@ public class SecurityUser implements UserDetails {
         permissionMap.computeIfAbsent(projectKey, k -> new HashSet<>()).addAll(permissions);
     }
 
+    public void addPermission(String projectKey, Permission permissions) {
+        permissionMap.computeIfAbsent(projectKey, k -> new HashSet<>()).add(permissions);
+    }
+
     public void deletePermission(String projectKey, Permission permission) {
         permissionMap.computeIfPresent(projectKey, (k, permissions) ->{
            permissions.remove(permission);

@@ -1,7 +1,9 @@
 package dev.workforge.app.WorkForge;
 
+import dev.workforge.app.WorkForge.DTO.UserDTO;
 import dev.workforge.app.WorkForge.Model.State;
 import dev.workforge.app.WorkForge.Model.StateType;
+import dev.workforge.app.WorkForge.Model.Workflow;
 import dev.workforge.app.WorkForge.Repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -27,7 +29,6 @@ public class AppInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("START");
         State start = new State();
         start.setName("START");
         start.setStateType(StateType.INITIAL);
@@ -41,6 +42,11 @@ public class AppInitializer implements CommandLineRunner {
         end.setStateType(StateType.FINAL);
 
         stateRepository.saveAllAndFlush(List.of(start,progress, end));
-        System.out.println("Done");
+
+        Workflow workflow = new Workflow();
+        workflow.setDescription("This is a description");
+        workflow.setWorkflowName("Default workflow");
+
+        UserDTO userDTO = UserDTO.builder().username("tst").password("daa").build();
     }
 }

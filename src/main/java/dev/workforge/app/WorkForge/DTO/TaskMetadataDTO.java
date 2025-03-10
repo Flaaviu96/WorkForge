@@ -1,13 +1,14 @@
 package dev.workforge.app.WorkForge.DTO;
 
+import lombok.Builder;
+
 import java.util.Date;
 
-public class TaskMetadataDTO implements DTO{
-    private String assignedTo;
-    private String createdBy;
-    private String description;
-
-    private Date createdDate;
-
-    private Date modifiedDate;
-}
+@Builder
+public record TaskMetadataDTO(
+     String assignedTo,
+     String createdBy,
+     String description,
+     Date createdDate,
+     Date modifiedDate
+) {}

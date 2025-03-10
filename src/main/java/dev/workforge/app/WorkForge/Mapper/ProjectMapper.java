@@ -11,13 +11,13 @@ public interface ProjectMapper {
 
     ProjectMapper INSTANCE = Mappers.getMapper(ProjectMapper.class);
 
-    @Mapping(target = "taskDTOS", source = "tasks")
+    @Mapping(target = "taskDTO", source = "tasks")
     ProjectDTO toDTOWithTasks(Project project);
 
-    @Mapping(target = "taskDTOS", ignore = true)
+    @Mapping(target = "taskDTO", ignore = true)
     ProjectDTO toDTOWithoutTasks(Project project);
 
-    @Mapping(target = "tasks", source = "taskDTOS")
+    @Mapping(target = "tasks", source = "taskDTO")
     Project toProjectWithTasks(ProjectDTO projectDTO);
 
     @Mapping(target = "tasks", ignore = true)

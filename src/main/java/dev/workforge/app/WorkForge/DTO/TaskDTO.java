@@ -1,24 +1,16 @@
 package dev.workforge.app.WorkForge.DTO;
 
-import dev.workforge.app.WorkForge.Model.*;
-import jakarta.persistence.*;
+import lombok.Builder;
 
 import java.util.Set;
 
-public class TaskDTO implements DTO{
-
-    private long id;
-
-    private String taskName;
-
-    private StateDTO stateDTO;
-
-    private Set<AttachmentDTO> attachmentDTOS;
-
-    private Set<CommentDTO> commentDTOS;
-
-    private Project project;
-
-    @Embedded
-    private TaskMetadata taskMetadata;
-}
+@Builder
+public record TaskDTO(
+        long id,
+        String taskName,
+        StateDTO stateDTO,
+        Set<AttachmentDTO> attachmentDTOS,
+        Set<CommentDTO> commentDTOS,
+        ProjectDTO projectDTO,
+        TaskMetadataDTO taskMetadataDTO
+) {}

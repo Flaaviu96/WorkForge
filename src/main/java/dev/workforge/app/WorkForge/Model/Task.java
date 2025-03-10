@@ -31,5 +31,4 @@ public class Task {
 
     @Embedded
     private TaskMetadata taskMetadata;
-
 }

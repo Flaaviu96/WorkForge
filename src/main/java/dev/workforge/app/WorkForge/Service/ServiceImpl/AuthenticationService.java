@@ -27,7 +27,7 @@ public class AuthenticationService {
     public void login(UserDTO userDTO, String idSession) {
         try {
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword());
+                    new UsernamePasswordAuthenticationToken(userDTO.username(), userDTO.password());
             Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();

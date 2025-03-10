@@ -17,6 +17,6 @@ public interface TaskMapper {
 
     Task toTask(TaskDTO taskDTO);
 
-    @Mapping(target = "commentDTOS", source = "comments")
+    @Mapping(target = "commentDTO", source = "comments")
     Set<TaskDTO> toDTO (Set<Task> tasks);
 }

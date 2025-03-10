@@ -21,8 +21,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Set<TaskDTO> getTasksWithCommentsByProjectId(long projectId) {
-        Project project = projectRepository.findTasksWithCommentsByProjectId(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-        return ProjectMapper.INSTANCE.toDTOWithTasks(project).getTaskDTOS();
+//        Project project = projectRepository.findTasksWithCommentsByProjectId(projectId)
+//                .orElseThrow(ProjectNotFoundException::new);
+//        return ProjectMapper.INSTANCE.toDTOWithTasks(project).getTaskDTO();
+        return null;
     }
 }

@@ -15,5 +15,4 @@ public class AppUserDetails {
     private String firstName;
     private String secondName;
     private String mobilePhone;
-
 }

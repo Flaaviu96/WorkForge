@@ -1,17 +1,13 @@
 package dev.workforge.app.WorkForge.DTO;
 
-
-
+import lombok.Builder;
 import java.util.Set;
 
-public class WorkflowDTO implements DTO{
-    private long id;
-
-    private String workflowName;
-
-    private String description;
-
-    private Set<StateTransitionDTO> stateTransitionDTOS;
-
-    private Set<ProjectDTO> projectDTOS;
-}
+@Builder
+public record WorkflowDTO (
+     long id,
+     String workflowName,
+     String description,
+     Set<StateTransitionDTO> stateTransitionDTOS,
+     Set<ProjectDTO> projectDTOS
+) {}

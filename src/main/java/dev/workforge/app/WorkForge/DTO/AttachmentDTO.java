@@ -1,12 +1,11 @@
 package dev.workforge.app.WorkForge.DTO;
 
-public class AttachmentDTO implements DTO{
+import lombok.Builder;
 
-    private long id;
-
-    private String fileName;
-    private String fileType;
-
-    private byte[] data;
-
-}
+@Builder
+public record AttachmentDTO(
+        long id,
+        String fileName,
+        String fileType,
+        byte[] data
+) {}

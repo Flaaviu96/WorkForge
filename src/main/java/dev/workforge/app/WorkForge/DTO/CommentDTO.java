@@ -1,15 +1,14 @@
 package dev.workforge.app.WorkForge.DTO;
 
+import lombok.Builder;
+
 import java.util.Date;
 
-public class CommentDTO implements DTO{
-    private long id;
-
-    private String author;
-
-    private String content;
-
-    private Date createdDate;
-
-    private Date modifiedDate;
-}
+@Builder
+public record CommentDTO(
+        long id,
+        String author,
+        String content,
+        Date createdDate,
+        Date modifiedDate
+) {}

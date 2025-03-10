@@ -18,7 +18,7 @@ public class Workflow {
 
     private String description;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "workflow", cascade = CascadeType.MERGE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StateTransition> stateTransitions;
 
     @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

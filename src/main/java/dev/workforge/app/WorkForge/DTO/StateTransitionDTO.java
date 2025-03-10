@@ -1,11 +1,11 @@
 package dev.workforge.app.WorkForge.DTO;
 
-public class StateTransitionDTO implements DTO{
-    private long id;
+import lombok.Builder;
 
-    private StateDTO fromStateDTO;
-
-    private StateDTO toStateDTO;
-
-    private WorkflowDTO workflowDTO;
-}
+@Builder
+public record StateTransitionDTO(
+        long id,
+        StateDTO fromStateDTO,
+        StateDTO toStateDTO,
+        WorkflowDTO workflowDTO
+) {}
