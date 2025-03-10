@@ -1,8 +1,11 @@
 package dev.workforge.app.WorkForge.Repository;
 
-import dev.workforge.app.WorkForge.Model.PermissionType;
+import dev.workforge.app.WorkForge.Model.Permission;
+
+import java.util.List;
+
 
 public interface UserPermissionProjection {
-    public String getProjectKey();
-    public PermissionType getPermission();
+     String getProjectKey();
+     List<Permission> getPermissions();
 }

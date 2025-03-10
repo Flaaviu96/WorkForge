@@ -1,6 +1,16 @@
 spring:
+  redis:
+    host: localhost
+    port: 6379
+    password: ""
+    jedis:
+      pool:
+        max-active: 10
+        max-idle: 5
+        min-idle: 1
+        max-wait: 10000ms
   datasource:
-    url: jdbc:postgresql://localhost:32769/workforge
+    url: jdbc:postgresql://localhost:32768/workforge
     username: postgres
     password: mysecretpassword
     driver-class-name: org.postgresql.Driver
@@ -10,3 +20,6 @@ spring:
     show-sql: true
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+logging:
+  level:
+    org.springframework.security: DEBUG

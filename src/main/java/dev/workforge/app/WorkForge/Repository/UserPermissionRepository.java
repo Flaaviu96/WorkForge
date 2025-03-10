@@ -10,8 +10,9 @@ import java.util.List;
 public interface UserPermissionRepository extends JpaRepository<UserPermission, Long> {
 
     @Query(
-            "SELECT u.project.projectName AS projectKey, u.permission AS permission " +
+            "SELECT u.project.projectName AS projectKey, permission AS permissions " +
                     "FROM UserPermission u " +
+                    "JOIN u.permissions permission " +
                     "WHERE u.user.username = :username"
     )
     List<UserPermissionProjection> findPermissionsByUser(@Param("username") String username);

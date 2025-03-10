@@ -26,7 +26,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
     private void addPermissionsToUser(UserDetails userDetails, List<UserPermissionProjection> userPermissionList) {
         for (UserPermissionProjection userPermission : userPermissionList) {
-            ((SecurityUser) userDetails).addPermission(userPermission.getProjectKey(), userPermission.getPermission());
+            ((SecurityUser) userDetails).addPermission(userPermission.getProjectKey(), userPermission.getPermissions());
         }
     }
 }

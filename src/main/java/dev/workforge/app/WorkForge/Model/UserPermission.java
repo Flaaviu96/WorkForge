@@ -4,13 +4,14 @@ package dev.workforge.app.WorkForge.Model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "user_permission", indexes = {
-        @Index(name = "idx_user_project", columnList = "user_id, project_id"),
-        @Index(name = "idx_permission", columnList = "permission")
+        @Index(name = "idx_user_project", columnList = "user_id, project_id")
 })
 @Data
 public class UserPermission {
@@ -33,7 +34,9 @@ public class UserPermission {
             joinColumns = @JoinColumn(name = "user_permission_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
-    private Set<Permission> permissions = new HashSet<>();
+    private List<Permission> permissions = new ArrayList<>();
 
-
+    public void addPermission(Permission permission) {
+        this.permissions.add(permission);
+    }
 }

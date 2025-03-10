@@ -1,17 +1,15 @@
 package dev.workforge.app.WorkForge.Security;
 
-
-import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Model.AppUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import dev.workforge.app.WorkForge.Model.Permission;
 import java.util.*;
 
 
 public class SecurityUser implements UserDetails {
     private final AppUser user;
-    private final Map<String, Set<PermissionType>> permissionMap = new HashMap<>();
+    private final Map<String, Set<Permission>> permissionMap = new HashMap<>();
 
     public SecurityUser(AppUser user) {
         this.user = user;
@@ -32,19 +30,19 @@ public class SecurityUser implements UserDetails {
         return user.getUsername();
     }
 
-    public Map<String, Set<PermissionType>> getPermissionMap() {
+    public Map<String, Set<Permission>> getPermissionMap() {
         return permissionMap;
     }
 
-    public void addPermission(String projectKey, Set<PermissionType> permissions) {
+    public void addPermission(String projectKey, List<Permission> permissions) {
         permissionMap.computeIfAbsent(projectKey, k -> new HashSet<>()).addAll(permissions);
     }
 
-    public void addPermission(String projectKey, PermissionType permissions) {
+    public void addPermission(String projectKey, Permission permissions) {
         permissionMap.computeIfAbsent(projectKey, k -> new HashSet<>()).add(permissions);
     }
 
-    public void deletePermission(String projectKey, PermissionType permission) {
+    public void deletePermission(String projectKey, Permission permission) {
         permissionMap.computeIfPresent(projectKey, (k, permissions) ->{
            permissions.remove(permission);
            return permissions.isEmpty() ? null : permissions;

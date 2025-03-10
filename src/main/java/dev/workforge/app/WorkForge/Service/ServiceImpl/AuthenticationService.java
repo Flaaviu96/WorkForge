@@ -33,7 +33,6 @@ public class AuthenticationService {
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
             userPermissionService.loadUserPermissions(securityUser);
             securityUserService.storeUserInRedis(idSession, securityUser);
-
         } catch (AuthenticationException e) {
             System.out.println("Authentication failed: " + e.getMessage());
         }

@@ -3,9 +3,11 @@ package dev.workforge.app.WorkForge;
 import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class AppInitializer implements CommandLineRunner {
@@ -17,8 +19,10 @@ public class AppInitializer implements CommandLineRunner {
     private final StateTransitionRepository stateTransitionRepository;
     private final WorkflowRepository workflowRepository;
     private final UserPermissionRepository userPermissionRepository;
+    private final PermissionRepository permissionRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AppInitializer(ProjectRepository projectRepository, UserRepository userRepository, TaskRepository taskRepository, StateRepository stateRepository, StateTransitionRepository stateTransitionRepository, WorkflowRepository workflowRepository, UserPermissionRepository userPermissionRepository) {
+    public AppInitializer(ProjectRepository projectRepository, UserRepository userRepository, TaskRepository taskRepository, StateRepository stateRepository, StateTransitionRepository stateTransitionRepository, WorkflowRepository workflowRepository, UserPermissionRepository userPermissionRepository, PermissionRepository permissionRepository, PasswordEncoder passwordEncoder) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
@@ -26,6 +30,8 @@ public class AppInitializer implements CommandLineRunner {
         this.stateTransitionRepository = stateTransitionRepository;
         this.workflowRepository = workflowRepository;
         this.userPermissionRepository = userPermissionRepository;
+        this.permissionRepository = permissionRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -92,18 +98,24 @@ public class AppInitializer implements CommandLineRunner {
     private void createAndSaveUser(String username, String password) {
         AppUser appUser = new AppUser();
         appUser.setUsername(username);
-        appUser.setPassword(password);
+        appUser.setPassword(passwordEncoder.encode(password));
         userRepository.saveAndFlush(appUser);
     }
 
     private void createAndSaveUserPermissions(String username, long id) {
-        AppUser appUser = userRepository.findByUsername(username);
+        Optional<AppUser> appUser = userRepository.findByUsername(username);
         Project project = projectRepository.findById(id).orElseThrow();
+
+        Permission readPermission = new Permission();
+        readPermission.setPermissionType(PermissionType.READ);
+        readPermission.setDescription("This one is for read rights");
+
+        permissionRepository.saveAndFlush(readPermission);
 
         UserPermission userPermission = new UserPermission();
         userPermission.setProject(project);
-        userPermission.setUser(appUser);
-        userPermission.setPermission(PermissionType.READ);
+        userPermission.setUser(appUser.get());
+        userPermission.addPermission(readPermission);
 
         userPermissionRepository.saveAndFlush(userPermission);
     }

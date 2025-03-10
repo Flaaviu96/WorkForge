@@ -4,6 +4,9 @@ import dev.workforge.app.WorkForge.Model.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<AppUser, Long> {
 
@@ -11,5 +14,5 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
             "SELECT u FROM AppUser u " +
             "WHERE u.username = :username"
     )
-    AppUser findByUsername(String username);
+    Optional<AppUser> findByUsername(String username);
 }
