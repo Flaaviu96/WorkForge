@@ -1,9 +1,6 @@
 package dev.workforge.app.WorkForge;
 
-import dev.workforge.app.WorkForge.DTO.UserDTO;
-import dev.workforge.app.WorkForge.Model.State;
-import dev.workforge.app.WorkForge.Model.StateType;
-import dev.workforge.app.WorkForge.Model.Workflow;
+import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -18,17 +15,32 @@ public class AppInitializer implements CommandLineRunner {
     private final TaskRepository taskRepository;
     private final StateRepository stateRepository;
     private final StateTransitionRepository stateTransitionRepository;
+    private final WorkflowRepository workflowRepository;
+    private final UserPermissionRepository userPermissionRepository;
 
-    public AppInitializer(ProjectRepository projectRepository, UserRepository userRepository, TaskRepository taskRepository, StateRepository stateRepository, StateTransitionRepository stateTransitionRepository) {
+    public AppInitializer(ProjectRepository projectRepository, UserRepository userRepository, TaskRepository taskRepository, StateRepository stateRepository, StateTransitionRepository stateTransitionRepository, WorkflowRepository workflowRepository, UserPermissionRepository userPermissionRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.stateRepository = stateRepository;
         this.stateTransitionRepository = stateTransitionRepository;
+        this.workflowRepository = workflowRepository;
+        this.userPermissionRepository = userPermissionRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
+        List<State> states = createStates();
+        stateRepository.saveAllAndFlush(states);
+
+        Workflow workflow = createWorkflow(states);
+
+        createAndSaveProject(workflow);
+        createAndSaveUser("dicas","dicas");
+        createAndSaveUserPermissions("dicas",1L);
+    }
+
+    private List<State> createStates() {
         State start = new State();
         start.setName("START");
         start.setStateType(StateType.INITIAL);
@@ -37,16 +49,62 @@ public class AppInitializer implements CommandLineRunner {
         progress.setName("PROGRESS");
         progress.setStateType(StateType.INTERMEDIATE);
 
+        State onHold = new State();
+        onHold.setName("ON HOLD");
+        onHold.setStateType(StateType.INTERMEDIATE);
+
         State end = new State();
         end.setName("END");
         end.setStateType(StateType.FINAL);
 
-        stateRepository.saveAllAndFlush(List.of(start,progress, end));
+        return List.of(start, progress, onHold, end);
+    }
 
+    private Workflow createWorkflow(List<State> states) {
         Workflow workflow = new Workflow();
         workflow.setDescription("This is a description");
         workflow.setWorkflowName("Default workflow");
 
-        UserDTO userDTO = UserDTO.builder().username("tst").password("daa").build();
+        // Create state transitions
+        StateTransition startToProgress = new StateTransition();
+        startToProgress.setFromState(states.get(0));  // START
+        startToProgress.setToState(states.get(1));    // PROGRESS
+
+        StateTransition progressToEnd = new StateTransition();
+        progressToEnd.setFromState(states.get(1));    // PROGRESS
+        progressToEnd.setToState(states.get(3));      // END
+
+        workflow.addStateTransition(startToProgress);
+        workflow.addStateTransition(progressToEnd);
+
+        return workflow;
+    }
+
+    private void createAndSaveProject(Workflow workflow) {
+        Project project = new Project();
+        project.setProjectName("Test");
+        project.setWorkflow(workflow);
+
+        workflow.addProject(project);
+        workflowRepository.saveAndFlush(workflow);
+    }
+
+    private void createAndSaveUser(String username, String password) {
+        AppUser appUser = new AppUser();
+        appUser.setUsername(username);
+        appUser.setPassword(password);
+        userRepository.saveAndFlush(appUser);
+    }
+
+    private void createAndSaveUserPermissions(String username, long id) {
+        AppUser appUser = userRepository.findByUsername(username);
+        Project project = projectRepository.findById(id).orElseThrow();
+
+        UserPermission userPermission = new UserPermission();
+        userPermission.setProject(project);
+        userPermission.setUser(appUser);
+        userPermission.setPermission(PermissionType.READ);
+
+        userPermissionRepository.saveAndFlush(userPermission);
     }
 }

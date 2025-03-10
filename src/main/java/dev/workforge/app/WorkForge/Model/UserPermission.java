@@ -2,12 +2,17 @@ package dev.workforge.app.WorkForge.Model;
 
 
 import jakarta.persistence.*;
+import lombok.Data;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "user_permission", indexes = {
         @Index(name = "idx_user_project", columnList = "user_id, project_id"),
         @Index(name = "idx_permission", columnList = "permission")
 })
+@Data
 public class UserPermission {
 
     @Id
@@ -22,7 +27,13 @@ public class UserPermission {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Permission permission;
+    @ManyToMany
+    @JoinTable(
+            name = "user_permission_permissions",
+            joinColumns = @JoinColumn(name = "user_permission_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+    private Set<Permission> permissions = new HashSet<>();
+
+
 }

@@ -31,7 +31,7 @@ public class AuthenticationService {
             Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
-            userPermissionService.transferPermissions(securityUser);
+            userPermissionService.loadUserPermissions(securityUser);
             securityUserService.storeUserInRedis(idSession, securityUser);
 
         } catch (AuthenticationException e) {

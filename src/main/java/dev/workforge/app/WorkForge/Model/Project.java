@@ -31,4 +31,14 @@ public class Project {
     public Set<Task> getTasks() {
         return tasks;
     }
+
+    public void addTasks(Task task) {
+        tasks.add(task);
+        task.setProject(this);
+    }
+
+    public void removeTask(Task task) {
+        tasks.remove(task);
+        task.setProject(null);
+    }
 }

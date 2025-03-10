@@ -1,7 +1,5 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
-import dev.workforge.app.WorkForge.DTO.UserDTO;
-import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
@@ -21,12 +19,12 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     }
 
     @Override
-    public void transferPermissions(UserDetails userDetails) {
+    public void loadUserPermissions(UserDetails userDetails) {
         List<UserPermissionProjection> userPermission = userPermissionRepository.findPermissionsByUser(userDetails.getUsername());
-        transferPermission(userDetails, userPermission);
+        addPermissionsToUser(userDetails, userPermission);
     }
 
-    private void transferPermission(UserDetails userDetails, List<UserPermissionProjection> userPermissionList) {
+    private void addPermissionsToUser(UserDetails userDetails, List<UserPermissionProjection> userPermissionList) {
         for (UserPermissionProjection userPermission : userPermissionList) {
             ((SecurityUser) userDetails).addPermission(userPermission.getProjectKey(), userPermission.getPermission());
         }
