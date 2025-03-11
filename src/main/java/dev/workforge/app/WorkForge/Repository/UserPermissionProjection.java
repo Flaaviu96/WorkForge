@@ -6,6 +6,6 @@ import java.util.List;
 
 
 public interface UserPermissionProjection {
-     String getProjectKey();
+     Long getProjectId();
      List<Permission> getPermissions();
 }

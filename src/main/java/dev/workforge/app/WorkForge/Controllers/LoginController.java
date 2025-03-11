@@ -1,12 +1,15 @@
 package dev.workforge.app.WorkForge.Controllers;
 
 import dev.workforge.app.WorkForge.DTO.UserDTO;
+import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Service.ServiceImpl.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,11 +26,11 @@ public class LoginController {
 
     @PostMapping("/login")
     public void login(@RequestBody UserDTO userDTO, HttpServletRequest request) {
-        authenticationService.login(userDTO, request.getSession().getId());
+        authenticationService.login(userDTO, request.getRequestedSessionId());
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("yes");
+    @PostMapping("/logout")
+    public void logout(HttpServletRequest request) {
+        authenticationService.logout(request);
     }
 }

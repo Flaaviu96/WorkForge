@@ -1,7 +1,6 @@
 package dev.workforge.app.WorkForge.Security;
 
 import dev.workforge.app.WorkForge.Service.ServiceImpl.UserServiceImpl;
-import dev.workforge.app.WorkForge.Service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,9 +8,11 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 import java.util.List;
 
@@ -19,9 +20,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserServiceImpl userService;
+    private final SecurityUserService securityUserService;
 
-    public SecurityConfig(UserServiceImpl userService) {
+    public SecurityConfig(UserServiceImpl userService,SecurityUserService securityUserService) {
         this.userService = userService;
+        this.securityUserService = securityUserService;
     }
 
     @Bean
@@ -31,8 +34,18 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/logout").permitAll()
                         .anyRequest().authenticated()
                 )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .maximumSessions(1)
+                )
+                .securityContext(securityContextConfigurer ->
+                        securityContextConfigurer.requireExplicitSave(true)
+                                .securityContextRepository(securityContextRepository())
+                )
                 .formLogin(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable);
+                .csrf(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable
+                );
         return httpSecurity.build();
     }
 
@@ -47,5 +60,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new RedisSecurityContextRepository(securityUserService);
     }
 }

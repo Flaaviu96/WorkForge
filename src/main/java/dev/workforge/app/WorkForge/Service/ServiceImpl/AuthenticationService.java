@@ -4,6 +4,8 @@ import dev.workforge.app.WorkForge.DTO.UserDTO;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Security.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,7 +26,7 @@ public class AuthenticationService {
         this.userPermissionService = userPermissionService;
     }
 
-    public void login(UserDTO userDTO, String idSession) {
+    public void login(UserDTO userDTO, String sessionId) {
         try {
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(userDTO.username(), userDTO.password());
@@ -32,9 +34,20 @@ public class AuthenticationService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
             userPermissionService.loadUserPermissions(securityUser);
-            securityUserService.storeUserInRedis(idSession, securityUser);
+            securityUserService.storeUserInRedis(sessionId, securityUser);
         } catch (AuthenticationException e) {
             System.out.println("Authentication failed: " + e.getMessage());
+        }
+    }
+
+    public void logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            session.invalidate();
+            String sessionId = session.getId();
+            securityUserService.removeUserFromRedis(sessionId);
+            SecurityContextHolder.clearContext();
         }
     }
 }

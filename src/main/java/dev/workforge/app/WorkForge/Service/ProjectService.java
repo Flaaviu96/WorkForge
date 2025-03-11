@@ -2,8 +2,9 @@ package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 
-import java.util.Set;
+import java.util.List;
+
 
 public interface ProjectService {
-     Set<TaskDTO> getTasksWithCommentsByProjectId(long projectId);
+     List<TaskDTO> getTasksWithCommentsByProjectId(long projectId);
 }

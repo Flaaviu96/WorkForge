@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
 import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = CommentMapper.class)
@@ -18,5 +19,5 @@ public interface TaskMapper {
     Task toTask(TaskDTO taskDTO);
 
     @Mapping(target = "commentDTO", source = "comments")
-    Set<TaskDTO> toDTO (Set<Task> tasks);
+    List<TaskDTO> toDTO (Set<Task> tasks);
 }

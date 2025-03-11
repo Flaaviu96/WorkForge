@@ -1,13 +1,13 @@
 package dev.workforge.app.WorkForge.DTO;
 
 import lombok.Builder;
-import java.util.Set;
+import java.util.List;
 
 @Builder
 public record WorkflowDTO (
      long id,
      String workflowName,
      String description,
-     Set<StateTransitionDTO> stateTransitionDTOS,
-     Set<ProjectDTO> projectDTOS
+     List<StateTransitionDTO> stateTransitionDTOS,
+     List<ProjectDTO> projectDTOS
 ) {}

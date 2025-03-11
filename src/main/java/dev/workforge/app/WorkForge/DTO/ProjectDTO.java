@@ -2,13 +2,14 @@ package dev.workforge.app.WorkForge.DTO;
 
 import lombok.Builder;
 
-import java.util.Set;
+import java.util.List;
+
 
 @Builder
 public record ProjectDTO(
         long id,
         String projectName,
         String projectDescription,
-        Set<TaskDTO> taskDTO,
+        List<TaskDTO> taskDTO,
         WorkflowDTO workflowDTO
 ) {}
