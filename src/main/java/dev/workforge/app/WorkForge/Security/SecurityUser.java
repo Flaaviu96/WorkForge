@@ -1,96 +1,72 @@
 package dev.workforge.app.WorkForge.Security;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import dev.workforge.app.WorkForge.Model.AppUser;
+import dev.workforge.app.WorkForge.Model.Permission;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import dev.workforge.app.WorkForge.Model.Permission;
-import java.util.*;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
-public class SecurityUser implements UserDetails {
-    private final String username;
-    private final String password;
-    private Map<Long, Set<Permission>> permissionMap = new HashMap<>();
+public interface SecurityUser extends UserDetails {
 
-    public SecurityUser(AppUser user) {
-        this.username = user.getUsername();
-        this.password = user.getPassword();
+    Map<Long, Set<Permission>> getPermissionMap();
+
+    long getId();
+
+    default void addPermission(Long projectId, Permission permission) {
+        getPermissionMap().computeIfAbsent(projectId, k -> new HashSet<>()).add(permission);
     }
 
-    @JsonCreator
-    public SecurityUser(@JsonProperty("username") String username,
-                        @JsonProperty("password") String password,
-                        @JsonProperty("permissionMap") Map<Long, Set<Permission>> permissionMap) {
-        this.username = username;
-        this.password = password;
-        this.permissionMap = permissionMap != null ? permissionMap : new HashMap<>();
+    default void addPermissions(Long projectId, List<Permission> permissions) {
+        getPermissionMap().computeIfAbsent(projectId, k -> new HashSet<>()).addAll(permissions);
     }
 
-
-    @Override
-    @JsonIgnore
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
-    }
-
-    @Override
-    @JsonIgnore
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    public Map<Long, Set<Permission>> getPermissionMap() {
-        return permissionMap;
-    }
-
-    public void addPermission(Long projectId, List<Permission> permissions) {
-        permissionMap.computeIfAbsent(projectId, k -> new HashSet<>()).addAll(permissions);
-    }
-
-    public void addPermission(Long projectId, Permission permissions) {
-        permissionMap.computeIfAbsent(projectId, k -> new HashSet<>()).add(permissions);
-    }
-
-    public void deletePermission(Long projectId, Permission permission) {
-        permissionMap.computeIfPresent(projectId, (k, permissions) ->{
-           permissions.remove(permission);
-           return permissions.isEmpty() ? null : permissions;
+    default void deletePermission(Long projectId, Permission permission) {
+        getPermissionMap().computeIfPresent(projectId, (k, permissions) -> {
+            permissions.remove(permission);
+            return permissions.isEmpty() ? null : permissions;
         });
     }
 
+    default void clearMap() {
+        getPermissionMap().clear();
+    }
+
+    default void removeAllPermissions(Long projectId) {
+        getPermissionMap().remove(projectId);
+    }
+
     @Override
     @JsonIgnore
-    public boolean isEnabled() {
+    default boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
 
     @Override
     @JsonIgnore
-    public boolean isCredentialsNonExpired() {
+    default boolean isCredentialsNonExpired() {
         return UserDetails.super.isCredentialsNonExpired();
     }
 
     @Override
     @JsonIgnore
-    public boolean isAccountNonLocked() {
+    default boolean isAccountNonLocked() {
         return UserDetails.super.isAccountNonLocked();
     }
 
     @Override
     @JsonIgnore
-    public boolean isAccountNonExpired() {
+    default boolean isAccountNonExpired() {
         return UserDetails.super.isAccountNonExpired();
     }
 
-    public void removeAllPermissions(Long projectId) {
-        permissionMap.remove(projectId);
+    @Override
+    @JsonIgnore
+    default Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
     }
 }

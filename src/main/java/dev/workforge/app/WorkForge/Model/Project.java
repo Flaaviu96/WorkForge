@@ -28,10 +28,6 @@ public class Project {
     @JoinColumn(name = "workflow_id")
     private Workflow workflow;
 
-    public Set<Task> getTasks() {
-        return tasks;
-    }
-
     public void addTasks(Task task) {
         tasks.add(task);
         task.setProject(this);
@@ -40,5 +36,9 @@ public class Project {
     public void removeTask(Task task) {
         tasks.remove(task);
         task.setProject(null);
+    }
+
+    public Set<Task> getTasks() {
+        return tasks;
     }
 }

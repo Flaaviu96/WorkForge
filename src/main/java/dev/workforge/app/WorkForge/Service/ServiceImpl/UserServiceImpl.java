@@ -2,7 +2,7 @@ package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.Model.AppUser;
 import dev.workforge.app.WorkForge.Repository.UserRepository;
-import dev.workforge.app.WorkForge.Security.SecurityUser;
+import dev.workforge.app.WorkForge.Security.SecurityImpl.SecurityUserImpl;
 import dev.workforge.app.WorkForge.Service.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +22,6 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     public UserDetails loadUserByUsername(String username) {
         AppUser appUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username " + username));
-        return new SecurityUser(appUser);
+        return new SecurityUserImpl(appUser);
     }
 }

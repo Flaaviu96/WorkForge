@@ -12,8 +12,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisSessionConfig {
 
     @Bean
-    public RedisTemplate<String, SecurityUser> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, SecurityUser> template = new RedisTemplate<>();
+    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<Object, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 
         template.setKeySerializer(new StringRedisSerializer());

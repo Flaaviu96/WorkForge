@@ -21,6 +21,10 @@ public class RedisSecurityContextRepository implements SecurityContextRepository
     public SecurityContext loadContext(HttpRequestResponseHolder requestResponseHolder) {
         String sessionId = requestResponseHolder.getRequest().getRequestedSessionId();
 
+        if (sessionId == null) {
+            return SecurityContextHolder.createEmptyContext();
+        }
+
         SecurityUser securityUser = securityUserService.getUserFromRedis(sessionId);
         if (securityUser == null) {
             return SecurityContextHolder.createEmptyContext();
