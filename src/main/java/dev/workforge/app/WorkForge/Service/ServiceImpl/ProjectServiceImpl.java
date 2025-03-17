@@ -27,6 +27,11 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectMapper.INSTANCE.toDTOWithTasks(project).taskDTO();
     }
 
+    @Override
+    public List<Project> getProjectsByProjectIds(List<Long> projectIds) {
+        return List.of();
+    }
+
 //    public List<ProjectDTO> getProjectsWithoutTasks(Page page) {
 //
 //    }

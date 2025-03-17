@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<AppUser, Long> {
@@ -15,4 +16,10 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
             "WHERE u.username = :username"
     )
     Optional<AppUser> findByUsername(String username);
+
+    @Query(
+            "SELECT u FROM AppUser u " +
+            "WHERE u.username IN :usernames"
+    )
+    List<AppUser> findUsersByUsername(@Param("usernames") List<String> usernames);
 }

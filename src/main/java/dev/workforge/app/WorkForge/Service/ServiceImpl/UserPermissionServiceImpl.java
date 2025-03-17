@@ -1,26 +1,38 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.PermissionDTO;
+import dev.workforge.app.WorkForge.Model.AppUser;
 import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Model.PermissionType;
+import dev.workforge.app.WorkForge.Repository.PermissionRepository;
 import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
+import dev.workforge.app.WorkForge.Repository.UserRepository;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
+import dev.workforge.app.WorkForge.Service.PermissionService;
+import dev.workforge.app.WorkForge.Service.ProjectService;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
+import dev.workforge.app.WorkForge.Service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserPermissionServiceImpl implements UserPermissionService {
 
     private final UserPermissionRepository userPermissionRepository;
+    private final PermissionService permissionService;
+    private final UserService userService;
+    private final ProjectService projectService;
 
-    public UserPermissionServiceImpl(UserPermissionRepository userPermissionRepository) {
+    public UserPermissionServiceImpl(UserPermissionRepository userPermissionRepository, PermissionService permissionService, UserService userService, ProjectService projectService) {
         this.userPermissionRepository = userPermissionRepository;
+        this.permissionService = permissionService;
+        this.userService = userService;
+        this.projectService = projectService;
     }
 
     @Override
@@ -46,11 +58,21 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     }
 
     @Override
+    @Transactional
     public void assignPermissionsForUsers(List<PermissionDTO> permissionDTOS) {
-        Set<PermissionType> permissionTypes = permissionDTOS.stream()
-                .map(PermissionDTO::permissionType)
-                .collect(Collectors.toSet());
-
+        if (permissionDTOS.isEmpty()) {
+            return;
+        }
+        List<Permission> permissions = permissionService.getPermissionsByPermissionType(permissionDTOS);
+        List<String> usernames = permissionDTOS.stream()
+                .map(PermissionDTO::userName)
+                .toList();
+        List<AppUser> users = userService.getUsersByUsernames(usernames);
+        List<Long> projectIds = permissionDTOS.stream()
+                .map(PermissionDTO::projectId)
+                .distinct()
+                .toList();
+        projectService.getProjectsByProjectIds(projectIds);
     }
 
     private void addPermissionsToUser(UserDetails userDetails, List<UserPermissionProjection> userPermissionList, boolean updatePermissions) {
