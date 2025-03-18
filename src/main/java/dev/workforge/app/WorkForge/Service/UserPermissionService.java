@@ -1,37 +1,30 @@
 package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.DTO.PermissionDTO;
-import org.springframework.security.core.userdetails.UserDetails;
+import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
+import dev.workforge.app.WorkForge.Model.UserPermission;
+import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
 
 import java.util.List;
 
 public interface UserPermissionService {
 
      /**
-      * Loads user permissions from the database and adds them to the provided user details.
-      *
-      * @param userDetails the user details containing the permissions
+      * Fetching the permissions for the current user
+      * @param username the username of the user
+      * @return the list of the permissions or a empty list if the user doesn't have any permissions
       */
-     void loadUserPermissions(UserDetails userDetails);
-
-     /**
-      * Extracts the IDs of projects that do not have a specific permission type (e.g., READ, WRITE).
-      *
-      * @return a list of project IDs.
-      */
-     List<Long> extractProjectIdsFromSecurityContext();
-
-     /**
-      * Refresh the user permissions with the new ones
-      *
-      * @param userDetails the user details containing updated permissions.
-      */
-     void refreshUserPermissions (UserDetails userDetails);
-
+     List<UserPermissionProjection> getPermissionsForUser(String username);
 
      /**
       * Assign the list of permissions to the users.
       *
       */
-     void assignPermissionsForUsers(List<PermissionDTO> permissionDTOS);
+     void assignProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO);
+
+     /**
+      * Saving the UserPermission model into the database
+      * @param userPermission is the model
+      */
+     void saveUserPermission(UserPermission userPermission);
 }

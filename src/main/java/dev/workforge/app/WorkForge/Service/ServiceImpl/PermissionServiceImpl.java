@@ -1,15 +1,14 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.PermissionDTO;
+import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
 import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Repository.PermissionRepository;
 import dev.workforge.app.WorkForge.Service.PermissionService;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PermissionServiceImpl implements PermissionService {
@@ -23,12 +22,17 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public List<Permission> getPermissionsByPermissionType(List<PermissionDTO> permissionTypes) {
         if (permissionTypes.isEmpty()) {
-            return List.of();
+            return Collections.emptyList();
         }
-        List<PermissionType> permissionTypeList = new ArrayList<>(permissionTypes.stream()
+        List<PermissionType> permissionTypeList = permissionTypes.stream()
                 .map(this::mapPermissionDTO)
-                .collect(Collectors.toSet()));
-        return permissionRepository.findPermissionByPermissionType(permissionTypeList);
+                .distinct()
+                .toList();
+        List<Permission> permissions = permissionRepository.findPermissionByPermissionType(permissionTypeList);
+        if (permissions.isEmpty()) {
+            throw new PermissionNotFoundException("The permission is not found");
+        }
+        return permissions;
     }
 
     private PermissionType mapPermissionDTO(PermissionDTO permissionDTO) {

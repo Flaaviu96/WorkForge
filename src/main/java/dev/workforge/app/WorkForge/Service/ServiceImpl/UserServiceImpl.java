@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
+import dev.workforge.app.WorkForge.Exceptions.UserNotFoundException;
 import dev.workforge.app.WorkForge.Model.AppUser;
 import dev.workforge.app.WorkForge.Repository.UserRepository;
 import dev.workforge.app.WorkForge.Security.SecurityImpl.SecurityUserImpl;
@@ -9,7 +10,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserDetailsService, UserService {
@@ -29,11 +32,19 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     public List<AppUser> getUsersByUsernames(List<String> usernames) {
-        return List.of();
+        if (usernames.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<AppUser> appUsers = userRepository.findUsersByUsername(usernames);
+        if (appUsers.isEmpty()) {
+            throw new UserNotFoundException("Users not found");
+        }
+        return appUsers;
     }
 
     @Override
     public AppUser getUserByUsername(String username) {
-        return null;
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
     }
 }

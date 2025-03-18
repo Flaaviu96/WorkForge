@@ -7,14 +7,14 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class SecurityUserService {
+public class UserSessionService {
     private final RedisTemplate<Object, Object> redisTemplate;
     private static final String USER_PREFIX = "USER_SESSION:";
     private static final String PERMISSION_UPDATED_PREFIX = "PERMISSION_LAST_UPDATED:";
 
 
 
-    public SecurityUserService(RedisTemplate<Object, Object> redisTemplate) {
+    public UserSessionService(RedisTemplate<Object, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 

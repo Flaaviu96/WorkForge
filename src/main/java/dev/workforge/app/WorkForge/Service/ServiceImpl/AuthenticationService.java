@@ -2,7 +2,8 @@ package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.UserDTO;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
-import dev.workforge.app.WorkForge.Security.SecurityUserService;
+import dev.workforge.app.WorkForge.Security.UserSessionService;
+import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -17,13 +18,13 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
+    private final UserSessionService userSessionService;
     private final SecurityUserService securityUserService;
-    private final UserPermissionService userPermissionService;
 
-    public AuthenticationService(AuthenticationManager authenticationManager, SecurityUserService securityUserService, UserPermissionService userPermissionService) {
+    public AuthenticationService(AuthenticationManager authenticationManager, UserSessionService userSessionService, SecurityUserService securityUserService) {
         this.authenticationManager = authenticationManager;
+        this.userSessionService = userSessionService;
         this.securityUserService = securityUserService;
-        this.userPermissionService = userPermissionService;
     }
 
     public void login(UserDTO userDTO, String sessionId) {
@@ -33,8 +34,8 @@ public class AuthenticationService {
             Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
-            userPermissionService.loadUserPermissions(securityUser);
-            securityUserService.storeUserInRedis(sessionId, securityUser);
+            securityUserService.loadUserPermissionsIntoUserDetails(securityUser);
+            userSessionService.storeUserInRedis(sessionId, securityUser);
         } catch (AuthenticationException e) {
             System.out.println("Authentication failed: " + e.getMessage());
         }
@@ -46,7 +47,7 @@ public class AuthenticationService {
         if (session != null) {
             session.invalidate();
             String sessionId = session.getId();
-            securityUserService.removeUserFromRedis(sessionId);
+            userSessionService.removeUserFromRedis(sessionId);
             SecurityContextHolder.clearContext();
         }
     }

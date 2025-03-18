@@ -11,9 +11,9 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 public class RedisSecurityContextRepository implements SecurityContextRepository {
 
-    private final SecurityUserService securityUserService;
+    private final UserSessionService securityUserService;
 
-    public RedisSecurityContextRepository(SecurityUserService securityUserService) {
+    public RedisSecurityContextRepository(UserSessionService securityUserService) {
         this.securityUserService = securityUserService;
     }
 

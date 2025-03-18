@@ -54,6 +54,34 @@ public class SecurityUserImpl implements SecurityUser {
     }
 
     @Override
+    public void addPermission(Long projectId, Permission permission) {
+        permissionMap.computeIfAbsent(projectId, k -> new HashSet<>()).add(permission);
+    }
+
+    @Override
+    public void addPermissions(Long projectId, List<Permission> permissions) {
+        permissionMap.computeIfAbsent(projectId, k -> new HashSet<>()).addAll(permissions);
+    }
+
+    @Override
+    public void deletePermission(Long projectId, Permission permission) {
+        permissionMap.computeIfPresent(projectId, (k, perms) -> {
+            perms.remove(permission);
+            return perms.isEmpty() ? null : perms;
+        });
+    }
+
+    @Override
+    public void removeAllPermissions(Long projectId) {
+        permissionMap.remove(projectId);
+    }
+
+    @Override
+    public void clearMap() {
+        permissionMap.clear();
+    }
+
+    @Override
     @JsonIgnore
     public String getPassword() {
         return password;

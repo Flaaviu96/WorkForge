@@ -17,28 +17,15 @@ public interface SecurityUser extends UserDetails {
 
     long getId();
 
-    default void addPermission(Long projectId, Permission permission) {
-        getPermissionMap().computeIfAbsent(projectId, k -> new HashSet<>()).add(permission);
-    }
+    void addPermission(Long projectId, Permission permission);
 
-    default void addPermissions(Long projectId, List<Permission> permissions) {
-        getPermissionMap().computeIfAbsent(projectId, k -> new HashSet<>()).addAll(permissions);
-    }
+    void addPermissions(Long projectId, List<Permission> permissions);
 
-    default void deletePermission(Long projectId, Permission permission) {
-        getPermissionMap().computeIfPresent(projectId, (k, permissions) -> {
-            permissions.remove(permission);
-            return permissions.isEmpty() ? null : permissions;
-        });
-    }
+    void deletePermission(Long projectId, Permission permission);
 
-    default void clearMap() {
-        getPermissionMap().clear();
-    }
+    void removeAllPermissions(Long projectId);
 
-    default void removeAllPermissions(Long projectId) {
-        getPermissionMap().remove(projectId);
-    }
+    void clearMap();
 
     @Override
     @JsonIgnore

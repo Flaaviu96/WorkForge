@@ -20,9 +20,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserServiceImpl userService;
-    private final SecurityUserService securityUserService;
+    private final UserSessionService securityUserService;
 
-    public SecurityConfig(UserServiceImpl userService,SecurityUserService securityUserService) {
+    public SecurityConfig(UserServiceImpl userService, UserSessionService securityUserService) {
         this.userService = userService;
         this.securityUserService = securityUserService;
     }

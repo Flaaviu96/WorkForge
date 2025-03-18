@@ -33,9 +33,4 @@ public class LoginController {
     public void logout(HttpServletRequest request) {
         authenticationService.logout(request);
     }
-
-    @GetMapping("/test")
-    public String test() {
-        return "daaa";
-    }
 }

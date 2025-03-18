@@ -1,7 +1,8 @@
 package dev.workforge.app.WorkForge.Security;
 
 import dev.workforge.app.WorkForge.Model.Permission;
-import dev.workforge.app.WorkForge.Model.PermissionType;
+import dev.workforge.app.WorkForge.Service.SecurityUserService;
+import dev.workforge.app.WorkForge.Service.ServiceImpl.SecurityUserServiceImpl;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.annotation.Aspect;
@@ -20,20 +21,20 @@ import java.util.Set;
 @Component
 public class PermissionCheckAspect {
 
+    private final UserSessionService userSessionService;
     private final SecurityUserService securityUserService;
-    private final UserPermissionService userPermissionService;
 
-    public PermissionCheckAspect(SecurityUserService securityUserService, UserPermissionService userPermissionService) {
+    public PermissionCheckAspect(UserSessionService userSessionService, UserPermissionService userPermissionService, SecurityUserService securityUserService) {
+        this.userSessionService = userSessionService;
         this.securityUserService = securityUserService;
-        this.userPermissionService = userPermissionService;
     }
 
     @Before("@annotation(permissionCheck) && args(projectId)")
     public void checkPermission(PermissionCheck permissionCheck, Long projectId) {
         String sessionId = getCurrentHttpRequest().getRequestedSessionId();
         if (sessionId!= null && hasPermissionsChanged(sessionId)) {
-            userPermissionService.refreshUserPermissions(retrieveSecurityUser());
-            securityUserService.storeUserInRedis(sessionId, retrieveSecurityUser());
+            securityUserService.refreshUserPermissionsForUserDetails(retrieveSecurityUser());
+            userSessionService.storeUserInRedis(sessionId, retrieveSecurityUser());
         }
         Map<Long, Set<Permission>> permissions = retrieveSecurityUser().getPermissionMap();
         if (permissions.containsKey(projectId) && permissions.get(projectId).contains(new Permission().setPermissionType(permissionCheck.permissionType()))) {

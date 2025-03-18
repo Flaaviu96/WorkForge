@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.ExceptionHandler;
 
+import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
 import dev.workforge.app.WorkForge.Exceptions.ProjectNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,5 +19,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationFailedException(AuthenticationException authenticationException) {
         return new ResponseEntity<>(authenticationException.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(PermissionNotFoundException.class)
+    public ResponseEntity<String> handlePermissionNotFoundException(PermissionNotFoundException permissionNotFoundException) {
+        return new ResponseEntity<>(permissionNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
     }
 }

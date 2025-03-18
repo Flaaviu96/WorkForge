@@ -1,24 +1,19 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.PermissionDTO;
-import dev.workforge.app.WorkForge.Model.AppUser;
-import dev.workforge.app.WorkForge.Model.Permission;
-import dev.workforge.app.WorkForge.Model.PermissionType;
-import dev.workforge.app.WorkForge.Repository.PermissionRepository;
+import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
+import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
-import dev.workforge.app.WorkForge.Repository.UserRepository;
-import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Service.PermissionService;
 import dev.workforge.app.WorkForge.Service.ProjectService;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
 import dev.workforge.app.WorkForge.Service.UserService;
 import jakarta.transaction.Transactional;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 public class UserPermissionServiceImpl implements UserPermissionService {
@@ -36,60 +31,56 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     }
 
     @Override
-    public void loadUserPermissions(UserDetails userDetails) {
-        List<UserPermissionProjection> userPermission = userPermissionRepository.findPermissionsByUser(userDetails.getUsername());
-        addPermissionsToUser(userDetails, userPermission, false);
-    }
-
-    @Override
-    public List<Long> extractProjectIdsFromSecurityContext() {
-        Map<Long, Set<Permission>> permissions = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getPermissionMap();
-        return permissions.entrySet().stream()
-                .filter(entry -> entry.getValue().stream()
-                        .anyMatch(permission -> permission.getPermissionType() == PermissionType.READ))
-                .map(Map.Entry::getKey)
-                .toList();
-    }
-
-    @Override
-    public void refreshUserPermissions (UserDetails userDetails) {
-        List<UserPermissionProjection> userPermission = userPermissionRepository.findPermissionsByUser(userDetails.getUsername());
-        addPermissionsToUser(userDetails, userPermission, true);
+    public List<UserPermissionProjection> getPermissionsForUser(String username) {
+        List<UserPermissionProjection> userPermissionProjections = userPermissionRepository.findPermissionsByUser(username);
+        if (userPermissionProjections.isEmpty()) {
+            return List.of();
+        }
+        return userPermissionProjections;
     }
 
     @Override
     @Transactional
-    public void assignPermissionsForUsers(List<PermissionDTO> permissionDTOS) {
-        if (permissionDTOS.isEmpty()) {
+    public void assignProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO) {
+        if (projectPermissionsDTO.permissionDTO().isEmpty()) {
             return;
         }
-        List<Permission> permissions = permissionService.getPermissionsByPermissionType(permissionDTOS);
-        List<String> usernames = permissionDTOS.stream()
+
+        List<Permission> permissionsList = permissionService.getPermissionsByPermissionType(projectPermissionsDTO.permissionDTO());
+        if (permissionsList.isEmpty()) {
+            return;
+        }
+
+        List<String> usernames = projectPermissionsDTO.permissionDTO().stream()
                 .map(PermissionDTO::userName)
                 .toList();
-        List<AppUser> users = userService.getUsersByUsernames(usernames);
-        List<Long> projectIds = permissionDTOS.stream()
-                .map(PermissionDTO::projectId)
-                .distinct()
-                .toList();
-        projectService.getProjectsByProjectIds(projectIds);
+        List<AppUser> userList = userService.getUsersByUsernames(usernames);
+        if (userList.isEmpty()) {
+            return;
+        }
+
+        Optional<Project> project = projectService.getProjectByProjectId(projectPermissionsDTO.projectId());
+        if (project.isEmpty()) {
+            return;
+        }
+
+        for (PermissionDTO permissionDTO : projectPermissionsDTO.permissionDTO()) {
+            UserPermission userPermission = new UserPermission();
+            AppUser appUser = searchBasedOnProperty(userList, appUser1 -> appUser1.getUsername().equals(permissionDTO.userName()));
+            Permission permission = searchBasedOnProperty(permissionsList, permission1 -> permission1.getPermissionType().equals(permissionDTO.permissionType()));
+            userPermission.setProject(project.get());
+            userPermission.setUser(appUser);
+            userPermission.addPermission(permission);
+            saveUserPermission(userPermission);
+        }
     }
 
-    private void addPermissionsToUser(UserDetails userDetails, List<UserPermissionProjection> userPermissionList, boolean updatePermissions) {
-        if (updatePermissions) {
-            ((SecurityUser) userDetails).clearMap();
-        }
-
-        for (UserPermissionProjection userPermission : userPermissionList) {
-            ((SecurityUser) userDetails).addPermissions(userPermission.getProjectId(), userPermission.getPermissions());
-        }
+    @Override
+    public void saveUserPermission(UserPermission userPermission) {
+        userPermissionRepository.save(userPermission);
     }
 
-    private Map<Long, Set<Permission>> transformToMap(List<UserPermissionProjection> list) {
-        Map<Long, Set<Permission>> map = new HashMap<>();
-        for (UserPermissionProjection userPermissionProjection : list) {
-            map.computeIfAbsent(userPermissionProjection.getProjectId(), k -> new HashSet<>(userPermissionProjection.getPermissions()));
-        }
-        return map;
+    private <T> T searchBasedOnProperty(List<T> list, Predicate<T> predicate) {
+        return list.stream().filter(predicate).findFirst().orElse(null);
     }
 }
