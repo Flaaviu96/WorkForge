@@ -17,6 +17,8 @@ public interface SecurityUser extends UserDetails {
 
     long getId();
 
+    long getLastPermissionsUpdate();
+
     void addPermission(Long projectId, Permission permission);
 
     void addPermissions(Long projectId, List<Permission> permissions);

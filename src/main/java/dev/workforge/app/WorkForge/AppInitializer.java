@@ -110,7 +110,11 @@ public class AppInitializer implements CommandLineRunner {
         readPermission.setPermissionType(PermissionType.READ);
         readPermission.setDescription("This one is for read rights");
 
-        permissionRepository.saveAndFlush(readPermission);
+        Permission writePermission = new Permission();
+        writePermission.setPermissionType(PermissionType.WRITE);
+        writePermission.setDescription("This one is for write rights");
+
+        permissionRepository.saveAllAndFlush(List.of(readPermission, writePermission));
 
         UserPermission userPermission = new UserPermission();
         userPermission.setProject(project);

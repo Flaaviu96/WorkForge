@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Repository;
 
+import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Model.UserPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,5 +18,10 @@ public interface UserPermissionRepository extends JpaRepository<UserPermission, 
     )
     List<UserPermissionProjection> findPermissionsByUser(@Param("username") String username);
 
-
+    @Query(
+            "SELECT COUNT(u) > 0 FROM UserPermission u " +
+            "JOIN u.permissions permission " +
+            "WHERE u.id = :id AND permission.permissionType = :permissionType"
+    )
+    boolean isPermissionAssignedForUser (@Param("id") long id, @Param("permissionType") PermissionType permissionType);
 }

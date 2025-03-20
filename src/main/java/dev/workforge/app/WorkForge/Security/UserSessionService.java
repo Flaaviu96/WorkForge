@@ -37,8 +37,14 @@ public class UserSessionService {
         return getObjectFromRedis(USER_PREFIX + key, SecurityUser.class);
     }
 
-    public Long getChecksumFromRedis(String key) {
+    public Long getPermissionFromRedis(String key) {
         return getObjectFromRedis(PERMISSION_UPDATED_PREFIX + key, Long.class);
+    }
+
+    public void updatePermissionSession(String key) {
+        if (getObjectFromRedis(key, String.class) != null) {
+            redisTemplate.opsForValue().set(PERMISSION_UPDATED_PREFIX + key, System.currentTimeMillis(), 30, TimeUnit.MINUTES);
+        }
     }
 
     private <T> T getObjectFromRedis(@NonNull String key, Class<T> type) {

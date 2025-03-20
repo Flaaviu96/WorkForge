@@ -8,11 +8,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -22,9 +24,14 @@ public class ProjectController {
     }
 
     @PermissionCheck(permissionType = PermissionType.READ)
-    @GetMapping("/projects/{projectId}/tasks")
-    public ResponseEntity<List<TaskDTO>> getProjectTasksWithComments(@PathVariable long projectId, HttpServletRequest request) {
+    @GetMapping("/{projectId}/tasks")
+    public ResponseEntity<List<TaskDTO>> getProjectTasksWithComments(@PathVariable long projectId) {
         return ResponseEntity.ok(projectService.getTasksWithCommentsByProjectId(projectId));
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        return "Test";
     }
 
 //    @GetMapping("/projects")

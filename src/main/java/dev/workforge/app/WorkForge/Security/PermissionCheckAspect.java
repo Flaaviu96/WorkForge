@@ -31,14 +31,15 @@ public class PermissionCheckAspect {
 
     @Before("@annotation(permissionCheck) && args(projectId)")
     public void checkPermission(PermissionCheck permissionCheck, Long projectId) {
+        Map<Long, Set<Permission>> permissions = retrieveSecurityUser().getPermissionMap();
+        if (permissions.containsKey(projectId) && permissions.get(projectId).contains(new Permission().setPermissionType(permissionCheck.permissionType()))) {
+            return;
+        }
+
         String sessionId = getCurrentHttpRequest().getRequestedSessionId();
         if (sessionId!= null && hasPermissionsChanged(sessionId)) {
             securityUserService.refreshUserPermissionsForUserDetails(retrieveSecurityUser());
             userSessionService.storeUserInRedis(sessionId, retrieveSecurityUser());
-        }
-        Map<Long, Set<Permission>> permissions = retrieveSecurityUser().getPermissionMap();
-        if (permissions.containsKey(projectId) && permissions.get(projectId).contains(new Permission().setPermissionType(permissionCheck.permissionType()))) {
-            return;
         }
         throw new AccessDeniedException("User does not have permission to access the project"+ projectId);
     }
@@ -48,10 +49,9 @@ public class PermissionCheckAspect {
     }
 
     private boolean hasPermissionsChanged(String sessionId) {
-        return false;
-//        String checksumFromSecurityContext = retrieveSecurityUser().computeChecksum();
-//        String checksumFromRedis = securityUserService.getChecksumFromRedis(sessionId);
-//        return checksumFromRedis != null && checksumFromSecurityContext != null && !checksumFromSecurityContext.equals(checksumFromRedis);
+        long lastPermissionsUpdateFromRedis  = userSessionService.getPermissionFromRedis(String.valueOf(retrieveSecurityUser().getId()));
+        long lastPermissionsUpdateFromContext = retrieveSecurityUser().getLastPermissionsUpdate();
+        return lastPermissionsUpdateFromRedis > lastPermissionsUpdateFromContext;
     }
 
     private HttpServletRequest getCurrentHttpRequest() {
