@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,9 +23,10 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)  // Enables Mockito for unit testing
+@ExtendWith(MockitoExtension.class)
 public class PermissionCheckAspectTest {
 
     @Mock
@@ -40,7 +42,7 @@ public class PermissionCheckAspectTest {
     private PermissionCheckAspect permissionCheckAspect;
 
     @Mock
-    private SecurityContext securityContext;
+    private PermissionCheck permissionCheck;
 
     @Mock
     private ServletRequestAttributes servletRequestAttributes;
@@ -50,41 +52,48 @@ public class PermissionCheckAspectTest {
 
     private SecurityUser testUser;
 
+    private static final String sessionId = "testSessionId";
+
     @BeforeEach
     public void setup() {
-        // Mock the Security Context
-        SecurityContextHolder.setContext(securityContext);
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-
-        // Mock a test user
-        testUser = mock(SecurityUser.class);
-        when(authentication.getPrincipal()).thenReturn(testUser);
-
+        long lastPermissionsUpdate = System.currentTimeMillis();
         when(servletRequestAttributes.getRequest()).thenReturn(httpServletRequest);
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
+        when(httpServletRequest.getRequestedSessionId()).thenReturn(sessionId);
 
+        testUser = mock(SecurityUser.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(testUser);
+        SecurityContextHolder.setContext(securityContext);
 
+        when(userSessionService.getPermissionFromRedis(anyString())).thenReturn(lastPermissionsUpdate);
+        when(testUser.getLastPermissionsUpdate()).thenReturn(lastPermissionsUpdate);
+    }
+
+    private void preparePermissions() {
+        Map<Long, Set<Permission>> permissions = new HashMap<>();
+    }
+
+    private Permission createPermission(PermissionType permissionType) {
+        return new Permission().setPermissionType(permissionType);
+    }
+
+    private void mockUserPermissions(Map<Long, Set<Permission>> permissions) {
+        when(testUser.getPermissionMap()).thenReturn(permissions);
     }
 
     @Test
     public void testPermissionGranted() {
-        String sessionId = "testSessionId";
-        when(httpServletRequest.getRequestedSessionId()).thenReturn(sessionId);
-
-        long lastPermissionsUpdate = System.currentTimeMillis();
-        Permission permission = new Permission();
-        permission.setPermissionType(PermissionType.READ);
         Map<Long, Set<Permission>> permissions = new HashMap<>();
-        permissions.put(1L, new HashSet<>(Collections.singleton(permission)));
-        when(testUser.getPermissionMap()).thenReturn(permissions);
+        permissions.put(1L, new HashSet<>(Collections.singleton(createPermission(PermissionType.READ))));
+        mockUserPermissions(permissions);
 
-        when(userSessionService.getPermissionFromRedis(anyString())).thenReturn(lastPermissionsUpdate);
-        when(testUser.getLastPermissionsUpdate()).thenReturn(lastPermissionsUpdate);
+        // Mock annotation behavior
+        when(permissionCheck.permissionType()).thenReturn(PermissionType.READ);
 
-        PermissionCheck mockPermissionCheck = mock(PermissionCheck.class);
-        when(mockPermissionCheck.permissionType()).thenReturn(PermissionType.READ);
-
-        permissionCheckAspect.checkPermission(mockPermissionCheck, 1L);
+        permissionCheckAspect.checkPermission(permissionCheck, 1L);
 
         verify(userSessionService, times(1)).getPermissionFromRedis(anyString());
         verify(securityUserService, times(0)).refreshUserPermissionsForUserDetails(testUser);
@@ -92,15 +101,10 @@ public class PermissionCheckAspectTest {
 
     @Test
     public void testPermissionNotGranted() {
-        String sessionId = "testSessionId";
-        when(httpServletRequest.getRequestedSessionId()).thenReturn(sessionId);
+        mockUserPermissions(new HashMap<>());
 
-        Permission permission = new Permission();
-        permission.setPermissionType(PermissionType.READ);
-        Map<Long, Set<Permission>> permissions = new HashMap<>();
-        when(testUser.getPermissionMap()).thenReturn(permissions);
-
-        when(userSessionService.getPermissionFromRedis(anyString())).thenReturn(System.currentTimeMillis());
-        when(testUser.getLastPermissionsUpdate()).thenReturn(System.currentTimeMillis());
+        assertThrows(AccessDeniedException.class, () ->
+                permissionCheckAspect.checkPermission(permissionCheck, 1L)
+        );
     }
 }
