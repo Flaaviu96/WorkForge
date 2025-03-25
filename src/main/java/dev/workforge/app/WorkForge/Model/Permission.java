@@ -1,6 +1,7 @@
 package dev.workforge.app.WorkForge.Model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Objects;
@@ -8,6 +9,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "permissions")
 @Data
+@Builder(builderClassName = "PermissionBuilder")
 public class Permission {
 
     @Id

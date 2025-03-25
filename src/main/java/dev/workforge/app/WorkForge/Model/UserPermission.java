@@ -2,6 +2,8 @@ package dev.workforge.app.WorkForge.Model;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -14,11 +16,17 @@ import java.util.Set;
         @Index(name = "idx_user_project", columnList = "user_id, project_id")
 })
 @Data
+@Builder
+@AllArgsConstructor
 public class UserPermission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    public UserPermission() {
+
+    }
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

@@ -20,14 +20,12 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
 import java.util.*;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PermissionCheckAspectTest {
+public class PermissionCheckAspectTests {
 
     @Mock
     private UserSessionService userSessionService;
@@ -46,9 +44,6 @@ public class PermissionCheckAspectTest {
 
     @Mock
     private ServletRequestAttributes servletRequestAttributes;
-
-    @Mock
-    private Authentication authentication;
 
     private SecurityUser testUser;
 
@@ -72,12 +67,10 @@ public class PermissionCheckAspectTest {
         when(testUser.getLastPermissionsUpdate()).thenReturn(lastPermissionsUpdate);
     }
 
-    private void preparePermissions() {
-        Map<Long, Set<Permission>> permissions = new HashMap<>();
-    }
-
     private Permission createPermission(PermissionType permissionType) {
-        return new Permission().setPermissionType(permissionType);
+        return Permission.builder()
+                .permissionType(permissionType)
+                .build();
     }
 
     private void mockUserPermissions(Map<Long, Set<Permission>> permissions) {
@@ -90,13 +83,26 @@ public class PermissionCheckAspectTest {
         permissions.put(1L, new HashSet<>(Collections.singleton(createPermission(PermissionType.READ))));
         mockUserPermissions(permissions);
 
-        // Mock annotation behavior
-        when(permissionCheck.permissionType()).thenReturn(PermissionType.READ);
+
+        when(permissionCheck.permissionType()).thenReturn(new PermissionType[]{PermissionType.READ});
 
         permissionCheckAspect.checkPermission(permissionCheck, 1L);
 
         verify(userSessionService, times(1)).getPermissionFromRedis(anyString());
         verify(securityUserService, times(0)).refreshUserPermissionsForUserDetails(testUser);
+    }
+
+    @Test
+    public void testWriteWithoutReadPermission() {
+        Map<Long, Set<Permission>> permissions = new HashMap<>();
+        permissions.put(1L, new HashSet<>(Collections.singleton(createPermission(PermissionType.WRITE))));
+        mockUserPermissions(permissions);
+
+        when(permissionCheck.permissionType()).thenReturn(new PermissionType[]{PermissionType.WRITE});
+
+        assertThrows(AccessDeniedException.class, () ->
+                permissionCheckAspect.checkPermission(permissionCheck, 1L)
+        );
     }
 
     @Test

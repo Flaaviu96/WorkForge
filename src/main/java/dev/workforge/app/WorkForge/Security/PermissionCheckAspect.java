@@ -1,6 +1,7 @@
 package dev.workforge.app.WorkForge.Security;
 
 import dev.workforge.app.WorkForge.Model.Permission;
+import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.ServiceImpl.SecurityUserServiceImpl;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
@@ -38,7 +39,7 @@ public class PermissionCheckAspect {
         }
 
         Map<Long, Set<Permission>> permissions = retrieveSecurityUser().getPermissionMap();
-        if (permissions.containsKey(projectId) && permissions.get(projectId).contains(new Permission().setPermissionType(permissionCheck.permissionType()))) {
+        if (permissions.containsKey(projectId) && hasPermissions(permissionCheck.permissionType(), permissions, projectId)) {
             return;
         }
         throw new AccessDeniedException("User does not have permission to access the project"+ projectId);
@@ -48,6 +49,29 @@ public class PermissionCheckAspect {
         return (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
+    private boolean hasPermissions(PermissionType[] permissionTypes, Map<Long, Set<Permission>> permissions, long projectId) {
+        Set<Permission> permissionSet = permissions.get(projectId);
+        if (permissionSet == null) {
+            return false;
+        }
+
+        if (hasWriteWithoutRead(permissionSet)) {
+            return false;
+        }
+        for (PermissionType permissionType : permissionTypes) {
+            if (permissionSet.stream().noneMatch(permission -> permission.getPermissionType() == permissionType)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean hasWriteWithoutRead(Set<Permission> permissions) {
+        boolean hasWrite = permissions.stream().anyMatch(permission -> permission.getPermissionType() == PermissionType.WRITE);
+        boolean hasRead = permissions.stream().anyMatch(permission -> permission.getPermissionType() == PermissionType.READ);
+
+        return hasWrite && !hasRead;
+    }
     private boolean hasPermissionsChanged(String sessionId) {
         long lastPermissionsUpdateFromRedis = userSessionService.getPermissionFromRedis(String.valueOf(retrieveSecurityUser().getId()));
         long lastPermissionsUpdateFromContext = retrieveSecurityUser().getLastPermissionsUpdate();

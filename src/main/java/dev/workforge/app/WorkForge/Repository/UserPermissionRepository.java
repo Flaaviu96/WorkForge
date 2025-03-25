@@ -24,4 +24,11 @@ public interface UserPermissionRepository extends JpaRepository<UserPermission, 
             "WHERE u.id = :id AND permission.permissionType = :permissionType"
     )
     boolean isPermissionAssignedForUser (@Param("id") long id, @Param("permissionType") PermissionType permissionType);
+
+    @Query(
+            "SELECT u FROM UserPermission u " +
+            "JOIN FETCH u.project p " +
+            "WHERE u.user.id IN :ids"
+    )
+    List<UserPermission> findByUserIds(@Param("ids") List<Long> usersIds);
 }

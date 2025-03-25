@@ -55,12 +55,4 @@ public class SecurityUserServiceImpl implements SecurityUserService {
             ((SecurityUser) userDetails).addPermissions(userPermission.getProjectId(), userPermission.getPermissions());
         }
     }
-
-    private Map<Long, Set<Permission>> transformToMap(List<UserPermissionProjection> list) {
-        Map<Long, Set<Permission>> map = new HashMap<>();
-        for (UserPermissionProjection userPermissionProjection : list) {
-            map.computeIfAbsent(userPermissionProjection.getProjectId(), k -> new HashSet<>(userPermissionProjection.getPermissions()));
-        }
-        return map;
-    }
 }

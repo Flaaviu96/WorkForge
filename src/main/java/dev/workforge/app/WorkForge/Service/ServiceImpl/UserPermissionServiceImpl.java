@@ -12,12 +12,17 @@ import dev.workforge.app.WorkForge.Service.UserPermissionService;
 import dev.workforge.app.WorkForge.Service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class UserPermissionServiceImpl implements UserPermissionService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserPermissionServiceImpl.class);
 
     private final UserPermissionRepository userPermissionRepository;
     private final PermissionService permissionService;
@@ -51,6 +56,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
         List<Permission> permissionsList = permissionService.getPermissionsByPermissionType(projectPermissionsDTO.permissionDTO());
         if (permissionsList.isEmpty()) {
+            logger.warn("The permissions are not present in the database.");
             return;
         }
 
@@ -66,10 +72,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         if (project.isEmpty()) {
             return;
         }
-
+        Map<Long, Set<UserPermission>> userPermissionMap = getUserPermissionsMap(userList);
         for (PermissionDTO permissionDTO : projectPermissionsDTO.permissionDTO()) {
             AppUser appUser = searchBasedOnProperty(userList, appUser1 -> appUser1.getUsername().equals(permissionDTO.userName()));
-            if (isPermissionAssignedForUser(appUser.getId(), permissionDTO.permissionType())) {
+            if (isPermissionAssignedForUser(project.get().getId(), appUser.getId(), permissionDTO.permissionType(), userPermissionMap)) {
                 continue;
             }
             UserPermission userPermission = new UserPermission();
@@ -94,7 +100,18 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         return list.stream().filter(predicate).findFirst().orElse(null);
     }
 
-    private boolean isPermissionAssignedForUser(long id, PermissionType permissionType) {
-        return userPermissionRepository.isPermissionAssignedForUser(id, permissionType);
+    private boolean isPermissionAssignedForUser(long id, long userId, PermissionType permissionType, Map<Long, Set<UserPermission>> userPermissionMap) {
+        return userPermissionMap.getOrDefault(id, Set.of()).stream()
+                .anyMatch(userPermission -> userPermission.getUser().getId() == userId && userPermission.getPermissions()
+                        .stream()
+                        .anyMatch(permission -> permission.getPermissionType() == permissionType)
+                );
+    }
+
+    private Map<Long, Set<UserPermission>> getUserPermissionsMap (List<AppUser> userList) {
+        List<UserPermission> userPermissions = userPermissionRepository.findByUserIds(userList.stream().map(AppUser::getId).toList());
+        return userPermissions.stream().collect(Collectors.groupingBy(
+                up -> up.getProject().getId(),
+                Collectors.toSet()));
     }
 }

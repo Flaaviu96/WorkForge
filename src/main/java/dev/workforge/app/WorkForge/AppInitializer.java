@@ -87,18 +87,19 @@ public class AppInitializer implements CommandLineRunner {
     }
 
     private void createAndSaveProject(Workflow workflow) {
-        Project project = new Project();
-        project.setProjectName("Test");
-        project.setWorkflow(workflow);
-
+        Project project = Project.builder()
+                        .projectName("Test")
+                                .workflow(workflow)
+                                        .build();
         workflow.addProject(project);
         workflowRepository.saveAndFlush(workflow);
     }
 
     private void createAndSaveUser(String username, String password) {
-        AppUser appUser = new AppUser();
-        appUser.setUsername(username);
-        appUser.setPassword(passwordEncoder.encode(password));
+        AppUser appUser = AppUser.builder()
+                        .username(username)
+                                .password(passwordEncoder.encode(password))
+                                        .build();
         userRepository.saveAndFlush(appUser);
     }
 
@@ -106,13 +107,15 @@ public class AppInitializer implements CommandLineRunner {
         Optional<AppUser> appUser = userRepository.findByUsername(username);
         Project project = projectRepository.findById(id).orElseThrow();
 
-        Permission readPermission = new Permission();
-        readPermission.setPermissionType(PermissionType.READ);
-        readPermission.setDescription("This one is for read rights");
+        Permission readPermission = Permission.builder()
+                .permissionType(PermissionType.READ)
+                .description("Read right")
+                .build();
 
-        Permission writePermission = new Permission();
-        writePermission.setPermissionType(PermissionType.WRITE);
-        writePermission.setDescription("This one is for write rights");
+        Permission writePermission = Permission.builder()
+                .permissionType(PermissionType.WRITE)
+                .description("Write right")
+                .build();
 
         permissionRepository.saveAllAndFlush(List.of(readPermission, writePermission));
 

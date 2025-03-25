@@ -23,7 +23,7 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @PermissionCheck(permissionType = {PermissionType.READ})
+    @PermissionCheck(permissionType = PermissionType.READ)
     @GetMapping("/{projectId}/tasks")
     public ResponseEntity<List<TaskDTO>> getProjectTasksWithComments(@PathVariable long projectId) {
         return ResponseEntity.ok(projectService.getTasksWithCommentsByProjectId(projectId));

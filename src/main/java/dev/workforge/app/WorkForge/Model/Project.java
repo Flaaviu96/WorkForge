@@ -1,6 +1,8 @@
 package dev.workforge.app.WorkForge.Model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +12,8 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class Project {
 
     @Id
@@ -27,6 +31,10 @@ public class Project {
     @ManyToOne
     @JoinColumn(name = "workflow_id")
     private Workflow workflow;
+
+    public Project() {
+
+    }
 
     public void addTasks(Task task) {
         tasks.add(task);
