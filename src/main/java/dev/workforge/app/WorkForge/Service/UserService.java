@@ -14,7 +14,7 @@ public interface UserService {
      * @return A list of matching objects. Returns an empty list if the input list is empty.
      * @throws UserNotFoundException if no users are found in the database.
      */
-    List<AppUser> getUsersByUsernames(List<String> usernames);
+    List<AppUser> getUsersByIds(List<Long> usernames);
 
     AppUser getUserByUsername(String username);
 }

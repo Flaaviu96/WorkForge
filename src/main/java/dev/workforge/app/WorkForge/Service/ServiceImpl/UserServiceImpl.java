@@ -31,11 +31,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     @Override
-    public List<AppUser> getUsersByUsernames(List<String> usernames) {
-        if (usernames.isEmpty()) {
+    public List<AppUser> getUsersByIds(List<Long> usersIds) {
+        if (usersIds.isEmpty()) {
             return Collections.emptyList();
         }
-        List<AppUser> appUsers = userRepository.findUsersByUsername(usernames);
+        List<AppUser> appUsers = userRepository.findUsersByIds(usersIds);
         if (appUsers.isEmpty()) {
             throw new UserNotFoundException("Users not found");
         }

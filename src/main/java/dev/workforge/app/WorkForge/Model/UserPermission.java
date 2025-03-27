@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "user_permission", indexes = {
@@ -47,5 +48,17 @@ public class UserPermission {
 
     public void addPermissions(Set<Permission> permissions) {
         this.permissions.addAll(permissions);
+    }
+
+    public Set<Permission> getPermissions() {
+        return new HashSet<>(permissions);
+    }
+
+    public void clearPermissions() {
+        this.permissions.clear();
+    }
+
+    public void removePermisisons(Set<Permission> permissions) {
+        this.permissions.removeAll(permissions);
     }
 }

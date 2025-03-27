@@ -5,6 +5,6 @@ import lombok.Builder;
 
 @Builder
 public record PermissionDTO(
-        String userName,
+        long userId,
         PermissionType permissionType
 ) {}

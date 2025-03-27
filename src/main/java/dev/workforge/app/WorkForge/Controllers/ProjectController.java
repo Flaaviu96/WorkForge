@@ -1,15 +1,13 @@
 package dev.workforge.app.WorkForge.Controllers;
 
+import dev.workforge.app.WorkForge.DTO.ProjectDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,20 +23,15 @@ public class ProjectController {
 
     @PermissionCheck(permissionType = PermissionType.READ)
     @GetMapping("/{projectId}/tasks")
-    public ResponseEntity<List<TaskDTO>> getProjectTasksWithComments(@PathVariable long projectId) {
-        return ResponseEntity.ok(projectService.getTasksWithCommentsByProjectId(projectId));
+    public ResponseEntity<List<TaskDTO>> getProjectWithTasks(@PathVariable long projectId) {
+        return ResponseEntity.ok(projectService.getTasksWithoutCommentsByProjectId(projectId));
     }
 
-    @GetMapping("/test")
-    public String test() {
-        return "Test";
+    @GetMapping("/projects")
+    public ResponseEntity<List<ProjectDTO>> getProjectsWithTasks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return null;
     }
-
-//    @GetMapping("/projects")
-//    public ResponseEntity<List<ProjectDTO>> getProjectsWithTasks(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ) {
-//
-//    }
 }

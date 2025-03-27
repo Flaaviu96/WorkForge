@@ -14,6 +14,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service implementation for authenticate the user
+ * This class handles
+ * - Verifying the user credentials
+ * - Managing and authentication using Spring security
+ * - Loading user permissions when the authentication is a success
+ * - Storing and removing user sessions from Redis
+ */
+
 @Service
 public class AuthenticationService {
 
@@ -27,6 +36,15 @@ public class AuthenticationService {
         this.securityUserService = securityUserService;
     }
 
+    /**
+     * Authenticates the user based on provided credentials and initializes the session.
+     * Verifies the username and password using Spring security.
+     * Loads the user's permissions upon successfully authentication.
+     * Stores the authenticated user into Redis session.
+     *
+     * @param userDTO The DTO containing the username and the password.
+     * @param sessionId The ID which will be stored into the Redis
+     */
     public void login(UserDTO userDTO, String sessionId) {
         try {
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =

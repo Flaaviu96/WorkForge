@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
 
     @Query(
             "SELECT u FROM AppUser u " +
-            "WHERE u.username IN :usernames"
+            "WHERE u.username IN :usersIds"
     )
-    List<AppUser> findUsersByUsername(@Param("usernames") List<String> usernames);
+    List<AppUser> findUsersByIds(List<Long> usersIds);
 }
