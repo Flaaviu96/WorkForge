@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         List<String> usernames = projectPermissionsDTO.permissionDTO().stream()
                 .map(PermissionDTO::userName)
                 .toList();
+        // COnsider to user array instead of List, less memory
         List<AppUser> userList = userService.getUsersByUsernames(usernames);
         if (userList.isEmpty()) {
             return;
@@ -72,46 +74,80 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         if (project.isEmpty()) {
             return;
         }
-        Map<Long, Set<UserPermission>> userPermissionMap = getUserPermissionsMap(userList);
-        for (PermissionDTO permissionDTO : projectPermissionsDTO.permissionDTO()) {
-            AppUser appUser = searchBasedOnProperty(userList, appUser1 -> appUser1.getUsername().equals(permissionDTO.userName()));
-            if (isPermissionAssignedForUser(project.get().getId(), appUser.getId(), permissionDTO.permissionType(), userPermissionMap)) {
+
+        Map<String, Set<PermissionType>> usersPermissionsMap = groupPermissionsByUserFromDTO(projectPermissionsDTO.permissionDTO());
+        List<UserPermission> userPermissions = userPermissionRepository.findByUsersIdsAndProjectId(
+                userList.stream().map(AppUser::getId).toList(), project.get().getId()
+        );
+
+        Map<String, UserPermission> userPermissionsMap = userPermissions.stream()
+                .collect(Collectors.toMap(up -> up.getUser().getUsername(), Function.identity()));
+
+        List<UserPermission> saving = new ArrayList<>();
+        for (Map.Entry<String, Set<PermissionType>> entry : usersPermissionsMap.entrySet()) {
+
+            Set<Permission> newPermissions = getPermissionsByPermissionTypes(permissionsList, entry.getValue());
+            UserPermission userPermission = userPermissionsMap.get(entry.getKey());
+
+            if (userPermission == null) {
+                saving.add(createUserPermission(null, project.get(), newPermissions));
                 continue;
             }
-            UserPermission userPermission = new UserPermission();
-            Permission permission = searchBasedOnProperty(permissionsList, permission1 -> permission1.getPermissionType().equals(permissionDTO.permissionType()));
-            userPermission.setProject(project.get());
-            userPermission.setUser(appUser);
-            userPermission.addPermission(permission);
-            saveUserPermission(userPermission);
-        }
 
-        for (AppUser appUser : userList) {
+            if (hasAlreadyThePermissionsAssigned(userPermissions,createPredicate(entry.getKey()), entry.getValue())) {
+                continue;
+            }
+
+            userPermission.addPermissions(newPermissions);
+            saving.add(userPermission);
+        }
+        userPermissionRepository.saveAll(saving);
+        updatePermissionSession(userList);
+    }
+
+    private boolean hasAlreadyThePermissionsAssigned(List<UserPermission> userPermissions, Predicate<UserPermission> predicate, Set<PermissionType> permissionTypes) {
+        return userPermissions.stream()
+                .filter(predicate)
+                .allMatch(
+                        userPermission -> userPermission.getPermissions().stream()
+                                .map(Permission::getPermissionType)
+                                .collect(Collectors.toSet()).equals(permissionTypes)
+                );
+    }
+
+    private void updatePermissionSession(List<AppUser> appUsers) {
+        for (AppUser appUser : appUsers) {
             userSessionService.updatePermissionSession(String.valueOf(appUser.getId()));
         }
+    }
+
+    private Predicate<UserPermission> createPredicate(String username) {
+        return userPermission -> userPermission.getUser().getUsername().equals(username);
+    }
+
+    private Set<Permission> getPermissionsByPermissionTypes(List<Permission> permissionsList, Set<PermissionType> permissionTypes) {
+        return permissionsList.stream()
+                .filter(permission -> permissionTypes.contains(permission.getPermissionType()))
+                .collect(Collectors.toSet());
+    }
+
+    private UserPermission createUserPermission(AppUser appUser, Project project, Set<Permission> permissions) {
+        return UserPermission.builder()
+                .user(appUser)
+                .project(project)
+                .permissions(permissions)
+                .build();
     }
 
     @Override
     public void saveUserPermission(UserPermission userPermission) {
         userPermissionRepository.save(userPermission);
     }
-
-    private <T> T searchBasedOnProperty(List<T> list, Predicate<T> predicate) {
-        return list.stream().filter(predicate).findFirst().orElse(null);
-    }
-
-    private boolean isPermissionAssignedForUser(long id, long userId, PermissionType permissionType, Map<Long, Set<UserPermission>> userPermissionMap) {
-        return userPermissionMap.getOrDefault(id, Set.of()).stream()
-                .anyMatch(userPermission -> userPermission.getUser().getId() == userId && userPermission.getPermissions()
-                        .stream()
-                        .anyMatch(permission -> permission.getPermissionType() == permissionType)
-                );
-    }
-
-    private Map<Long, Set<UserPermission>> getUserPermissionsMap (List<AppUser> userList) {
-        List<UserPermission> userPermissions = userPermissionRepository.findByUserIds(userList.stream().map(AppUser::getId).toList());
-        return userPermissions.stream().collect(Collectors.groupingBy(
-                up -> up.getProject().getId(),
-                Collectors.toSet()));
+    private Map<String, Set<PermissionType>> groupPermissionsByUserFromDTO(List<PermissionDTO> permissionDTO) {
+        return permissionDTO.stream()
+                .collect(Collectors.groupingBy(
+                        PermissionDTO::userName,
+                        Collectors.mapping(PermissionDTO::permissionType, Collectors.toSet())
+                ));
     }
 }

@@ -67,12 +67,6 @@ public class PermissionCheckAspectTests {
         when(testUser.getLastPermissionsUpdate()).thenReturn(lastPermissionsUpdate);
     }
 
-    private Permission createPermission(PermissionType permissionType) {
-        return Permission.builder()
-                .permissionType(permissionType)
-                .build();
-    }
-
     private void mockUserPermissions(Map<Long, Set<Permission>> permissions) {
         when(testUser.getPermissionMap()).thenReturn(permissions);
     }
@@ -113,4 +107,11 @@ public class PermissionCheckAspectTests {
                 permissionCheckAspect.checkPermission(permissionCheck, 1L)
         );
     }
+
+    private Permission createPermission(PermissionType permissionType) {
+        return Permission.builder()
+                .permissionType(permissionType)
+                .build();
+    }
+
 }

@@ -27,8 +27,8 @@ public interface UserPermissionRepository extends JpaRepository<UserPermission, 
 
     @Query(
             "SELECT u FROM UserPermission u " +
-            "JOIN FETCH u.project p " +
-            "WHERE u.user.id IN :ids"
+            "JOIN u.project project " +
+            "WHERE u.user.id IN :ids AND u.project.id = :projectId"
     )
-    List<UserPermission> findByUserIds(@Param("ids") List<Long> usersIds);
+    List<UserPermission> findByUsersIdsAndProjectId(@Param("ids") List<Long> usersIds, @Param("projectId") long projectId);
 }

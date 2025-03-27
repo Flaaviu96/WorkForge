@@ -5,10 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -42,9 +39,13 @@ public class UserPermission {
             joinColumns = @JoinColumn(name = "user_permission_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
-    private List<Permission> permissions = new ArrayList<>();
+    private Set<Permission> permissions = new HashSet<>();
 
     public void addPermission(Permission permission) {
         this.permissions.add(permission);
+    }
+
+    public void addPermissions(Set<Permission> permissions) {
+        this.permissions.addAll(permissions);
     }
 }

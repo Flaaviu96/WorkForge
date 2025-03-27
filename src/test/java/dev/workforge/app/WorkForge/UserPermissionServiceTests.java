@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -21,6 +22,8 @@ import org.mockito.quality.Strictness;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -43,12 +46,17 @@ public class UserPermissionServiceTests {
     @Mock
     UserSessionService userSessionService;
 
+    @Spy
+    UserPermission firstUser;
+
+    @Spy
+    UserPermission secondUser;
+
     @InjectMocks
     UserPermissionServiceImpl  userPermissionService;
 
     @BeforeEach
     public void setup() {
-
         List<Permission> permissionList = List.of(createPermission(PermissionType.WRITE, 1L), createPermission(PermissionType.READ, 2L));
         when(permissionService.getPermissionsByPermissionType(anyList())).thenReturn(permissionList);
 
@@ -57,57 +65,12 @@ public class UserPermissionServiceTests {
 
         Optional<Project> project = Optional.ofNullable(createProjectOnlyWithName("Test", 1L));
         when(projectService.getProjectByProjectId(anyLong())).thenReturn(project);
-
-        List<UserPermission> userPermissions = List.of(createUserPermission(appUsers.get(0), List.of(createPermission(PermissionType.READ, 2L)), 1L, project.get()),
-                createUserPermission(appUsers.get(1), List.of(createPermission(PermissionType.WRITE, 1L)), 2L, project.get()));
-        when(userPermissionRepository.findByUserIds(anyList())).thenReturn(userPermissions);
+        firstUser = createUserPermission(appUsers.get(0), Set.of(createPermission(PermissionType.READ, 2L)), 1L, project.get());
+        secondUser = createUserPermission(appUsers.get(1), Set.of(createPermission(PermissionType.WRITE, 1L)), 2L, project.get());
+        List<UserPermission> userPermissions = List.of(firstUser, secondUser);
+        when(userPermissionRepository.findByUsersIdsAndProjectId(anyList(), anyLong())).thenReturn(userPermissions);
 
         doNothing().when(userSessionService).updatePermissionSession(anyString());
-    }
-
-    private Permission createPermission(PermissionType permissionType, long Id) {
-        return Permission.builder()
-                .id(Id)
-                .permissionType(permissionType)
-                .build();
-    }
-
-    private AppUser createAppUser(String username, String password, long id) {
-        return AppUser.builder()
-                .username(username)
-                .password(password)
-                .id(id)
-                .build();
-    }
-
-    private UserPermission createUserPermission(AppUser appUser, List<Permission> permissions, long id, Project project) {
-        return UserPermission.builder()
-                .user(appUser)
-                .permissions(permissions)
-                .id(id)
-                .project(project)
-                .build();
-    }
-
-    private PermissionDTO createPermissionDTO(PermissionType type, String username) {
-        return PermissionDTO.builder()
-                .permissionType(type)
-                .userName(username)
-                .build();
-    }
-
-    private ProjectPermissionsDTO createProjectPermissionsDTO(long projectId, PermissionDTO... permissions) {
-        return ProjectPermissionsDTO.builder()
-                .permissionDTO(List.of(permissions))
-                .projectId(projectId)
-                .build();
-    }
-
-    private Project createProjectOnlyWithName(String projectName, long id) {
-        return Project.builder()
-                .projectName(projectName)
-                .id(id)
-                .build();
     }
 
     @Test
@@ -152,5 +115,44 @@ public class UserPermissionServiceTests {
         userPermissionService.assignProjectPermissionsForUsers(projectPermissionsDTO);
 
         verify(userPermissionRepository, times(0)).save(any());
+    }
+
+    private Permission createPermission(PermissionType permissionType, long Id) {
+        return Permission.builder()
+                .id(Id)
+                .permissionType(permissionType)
+                .build();
+    }
+
+    private AppUser createAppUser(String username, String password, long id) {
+        return AppUser.builder()
+                .username(username)
+                .password(password)
+                .id(id)
+                .build();
+    }
+
+
+
+
+    private PermissionDTO createPermissionDTO(PermissionType type, String username) {
+        return PermissionDTO.builder()
+                .permissionType(type)
+                .userName(username)
+                .build();
+    }
+
+    private ProjectPermissionsDTO createProjectPermissionsDTO(long projectId, PermissionDTO... permissions) {
+        return ProjectPermissionsDTO.builder()
+                .permissionDTO(List.of(permissions))
+                .projectId(projectId)
+                .build();
+    }
+
+    private Project createProjectOnlyWithName(String projectName, long id) {
+        return Project.builder()
+                .projectName(projectName)
+                .id(id)
+                .build();
     }
 }
