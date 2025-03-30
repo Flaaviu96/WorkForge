@@ -11,5 +11,5 @@ public record ProjectDTO(
         String projectName,
         String projectDescription,
         List<TaskDTO> taskDTO,
-        WorkflowDTO workflowDTO
+        long workflowId
 ) {}

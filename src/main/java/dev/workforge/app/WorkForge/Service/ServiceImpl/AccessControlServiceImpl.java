@@ -1,59 +1,29 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
-import dev.workforge.app.WorkForge.DTO.PermissionDTO;
-import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
 import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Model.PermissionType;
-import dev.workforge.app.WorkForge.Repository.PermissionRepository;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Security.UserSessionService;
-import dev.workforge.app.WorkForge.Service.PermissionService;
+import dev.workforge.app.WorkForge.Service.AccessControlService;
 import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Service
-public class PermissionServiceImpl implements PermissionService {
+public class AccessControlServiceImpl implements AccessControlService {
 
-    private final PermissionRepository permissionRepository;
-    private final UserSessionService userSessionService;
     private final SecurityUserService securityUserService;
+    private final UserSessionService userSessionService;
 
-    public PermissionServiceImpl(PermissionRepository permissionRepository, UserSessionService userSessionService, SecurityUserService securityUserService) {
-        this.permissionRepository = permissionRepository;
-        this.userSessionService = userSessionService;
+    public AccessControlServiceImpl(SecurityUserService securityUserService, UserSessionService userSessionService) {
         this.securityUserService = securityUserService;
+        this.userSessionService = userSessionService;
     }
 
     @Override
-    public List<Permission> getPermissionsByPermissionType(List<PermissionDTO> permissionTypes) {
-        if (permissionTypes.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<PermissionType> permissionTypeList = permissionTypes.stream()
-                .map(this::mapPermissionDTO)
-                .distinct()
-                .toList();
-        List<Permission> permissions = permissionRepository.findPermissionByPermissionType(permissionTypeList);
-        if (permissions.isEmpty()) {
-            throw new PermissionNotFoundException("The permission is not found");
-        }
-        return permissions;
-    }
-
-    private PermissionType mapPermissionDTO(PermissionDTO permissionDTO) {
-        return permissionDTO.permissionType();
-    }
-
-    private SecurityUser retrieveSecurityUser() {
-        return (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    }
-
     public boolean hasPermissions(Long projectId, PermissionType[] permissionTypes, String sessionId) {
         if (projectId == null) {
             return false;
@@ -92,6 +62,15 @@ public class PermissionServiceImpl implements PermissionService {
         return true;
     }
 
+    @Override
+    public int[] getAvailableProjectsForCurrentUser() {
+        SecurityUser securityUser = retrieveSecurityUser();
+        Map<Long, Set<Permission>> permissions = securityUser.getPermissionMap();
+        return permissions.keySet().stream()
+                .mapToInt(Long::intValue)
+                .toArray();
+    }
+
     private boolean hasWriteWithoutRead(Set<Permission> permissions) {
         boolean hasWrite = permissions.stream().anyMatch(permission -> permission.getPermissionType() == PermissionType.WRITE);
         boolean hasRead = permissions.stream().anyMatch(permission -> permission.getPermissionType() == PermissionType.READ);
@@ -102,5 +81,9 @@ public class PermissionServiceImpl implements PermissionService {
         long lastPermissionsUpdateFromRedis = userSessionService.getPermissionFromRedis(String.valueOf(retrieveSecurityUser().getId()));
         long lastPermissionsUpdateFromContext = retrieveSecurityUser().getLastPermissionsUpdate();
         return lastPermissionsUpdateFromRedis > lastPermissionsUpdateFromContext;
+    }
+
+    private SecurityUser retrieveSecurityUser() {
+        return (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

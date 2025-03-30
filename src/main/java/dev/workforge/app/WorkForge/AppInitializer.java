@@ -2,6 +2,7 @@ package dev.workforge.app.WorkForge;
 
 import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

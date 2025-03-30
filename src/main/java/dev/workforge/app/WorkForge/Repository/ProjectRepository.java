@@ -21,4 +21,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query("SELECT p FROM Project p")
     Page<Project> findProjectsByPage(Pageable pageable);
+
+    @Query(
+            "SELECT CASE WHEN COUNT(p.projectName) > 0 THEN true ELSE false END " +
+                    "FROM Project p " +
+                    "WHERE p.projectName = :projectName"
+    )
+    boolean hasProjectNameAlready(String projectName);
 }

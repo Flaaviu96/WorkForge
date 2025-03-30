@@ -4,8 +4,10 @@ import dev.workforge.app.WorkForge.DTO.ProjectDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Exceptions.ProjectNotFoundException;
 import dev.workforge.app.WorkForge.Mapper.ProjectMapper;
+import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Model.Project;
 import dev.workforge.app.WorkForge.Repository.ProjectRepository;
+import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.ProjectService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,12 +41,23 @@ public class ProjectServiceImpl implements ProjectService {
         throw new ProjectNotFoundException("Project not found with id: "+projectId);
     }
 
+    @PermissionCheck(permissionType = {PermissionType.READ})
     @Override
-    public List<ProjectDTO> getProjectsWithoutTasks(Pageable page) {
-        Page projectsPage = projectRepository.findProjectsByPage(page);
-//        if (!projectsPage.isEmpty()) {
-//            ProjectMapper.INSTANCE.projectsPage.stream().toList();
-//        }
-        return List.of();
+    public List<ProjectDTO> getProjectsWithoutTasks(List<Long> projectsIds, Pageable page) {
+        Page<Project> projectsPage = projectRepository.findProjectsByPage(page);
+        if (!projectsPage.isEmpty()) {
+            return ProjectMapper.INSTANCE.toProjectsDTOWithoutTasks(projectsPage.stream().toList());
+        }
+
+        throw new ProjectNotFoundException("No projects found");
+    }
+
+    @Override
+    public void saveProject(ProjectDTO projectDTO) {
+        boolean foundProjectName = projectRepository.hasProjectNameAlready(projectDTO.projectName());
+        if (foundProjectName) {
+            return;
+        }
+
     }
 }

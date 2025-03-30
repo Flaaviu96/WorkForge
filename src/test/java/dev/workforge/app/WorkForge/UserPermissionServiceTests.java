@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -207,6 +208,30 @@ public class UserPermissionServiceTests {
 
         verify(userPermissionRepository, times(1)).deleteAll(any());
         verify(userSessionService, times(1)).updatePermissionSession(anyString());
+    }
+
+    @Test
+    public void test() {
+        List<Permission> permissionList = List.of(createPermission(PermissionType.WRITE, 1L), createPermission(PermissionType.READ, 2L));
+        List<List<Permission>> test = List.of(permissionList);
+        List<Permission> permissionList1 = List.of(createPermission(PermissionType.WRITE, 1L), createPermission(PermissionType.READ, 2L), createPermission(PermissionType.TEST, 3L));
+
+        Set<Permission> permissions = permissionList.stream()
+                .filter(permission -> permissionList1.stream()
+                        .allMatch(permission1 -> permission.getPermissionType() == permission1.getPermissionType()))
+                        .collect(Collectors.toSet());
+
+        test.stream()
+                .filter(permissions1 -> permissionList1.stream()
+                        .allMatch(permission -> permissions1.))
+
+//        Set<Permission> test = permissionList1.stream()
+//                        .filter(permission -> permissionList.stream()
+//                                .noneMatch(permission1 -> permission1.getPermissionType() == permission.getPermissionType()))
+//                                .collect(Collectors.toSet());
+
+        System.out.println(permissions.toString());
+
     }
 
     private Permission createPermission(PermissionType permissionType, long Id) {

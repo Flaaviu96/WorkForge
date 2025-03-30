@@ -102,7 +102,6 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                 handleExistingPermission(entry.getKey(), userPermissions, userPermission, newPermissions, permissionsToSave);
             }
         }
-        userPermissionRepository.saveAll(permissionsToSave);
         updatePermissionSession(dataResult.userList, permissionsToSave);
     }
 
@@ -127,7 +126,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                 .collect(Collectors.toMap(up -> up.getUser().getId(), Function.identity()));
 
         List<UserPermission> permissionsToDelete = new ArrayList<>();
-        List<UserPermission> permissionsToRemoveCompletely = new ArrayList<>(); // New list for full deletions
+        List<UserPermission> permissionsToRemoveCompletely = new ArrayList<>();
         for (Map.Entry<Long, Set<PermissionType>> entry : usersPermissionsMap.entrySet()) {
 
             Set<Permission> removePermissions = getPermissionsByPermissionTypes(dataResult.permissionsList, entry.getValue());
@@ -135,9 +134,6 @@ public class UserPermissionServiceImpl implements UserPermissionService {
             if (userPermission != null) {
                 handlePermissionsRemoval(userPermission, removePermissions, permissionsToDelete, permissionsToRemoveCompletely);
             }
-        }
-        if (!permissionsToDelete.isEmpty()) {
-            userPermissionRepository.saveAll(permissionsToDelete);
         }
         if (!permissionsToRemoveCompletely.isEmpty()) {
             userPermissionRepository.deleteAll(permissionsToRemoveCompletely);
