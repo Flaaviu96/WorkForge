@@ -9,7 +9,6 @@ import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Security.UserSessionService;
 import dev.workforge.app.WorkForge.Service.PermissionService;
 import dev.workforge.app.WorkForge.Service.SecurityUserService;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.util.Collections;
@@ -22,12 +21,10 @@ public class PermissionServiceImpl implements PermissionService {
 
     private final PermissionRepository permissionRepository;
     private final UserSessionService userSessionService;
-    private final SecurityUserService securityUserService;
 
-    public PermissionServiceImpl(PermissionRepository permissionRepository, UserSessionService userSessionService, SecurityUserService securityUserService) {
+    public PermissionServiceImpl(PermissionRepository permissionRepository, UserSessionService userSessionService) {
         this.permissionRepository = permissionRepository;
         this.userSessionService = userSessionService;
-        this.securityUserService = securityUserService;
     }
 
     @Override
@@ -52,27 +49,6 @@ public class PermissionServiceImpl implements PermissionService {
 
     private SecurityUser retrieveSecurityUser() {
         return (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    }
-
-    public boolean hasPermissions(Long projectId, PermissionType[] permissionTypes, String sessionId) {
-        if (projectId == null) {
-            return false;
-        }
-
-        SecurityUser securityUser = retrieveSecurityUser();
-
-        if (sessionId != null && hasPermissionsChanged(sessionId)) {
-            securityUserService.refreshUserPermissionsForUserDetails(securityUser);
-            userSessionService.storeUserInRedis(sessionId, securityUser);
-        }
-
-        Map<Long, Set<Permission>> permissions = securityUser.getPermissionMap();
-
-        if (permissions.containsKey(projectId) && hasRequiredPermissions(permissionTypes, permissions, projectId)) {
-            return true;
-        }
-
-        throw new AccessDeniedException("User does not have permission to access project " + projectId);
     }
 
     private boolean hasRequiredPermissions(PermissionType[] permissionTypes, Map<Long, Set<Permission>> permissions, long projectId) {

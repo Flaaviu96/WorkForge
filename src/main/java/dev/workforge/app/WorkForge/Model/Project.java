@@ -21,6 +21,9 @@ public class Project {
     @SequenceGenerator(name = "task_seq", sequenceName = "task_id_seq", allocationSize = 50)
     private long id;
 
+    @Version  // We use optimistic locking
+    private int version;
+
     private String projectName;
 
     private String projectDescription;

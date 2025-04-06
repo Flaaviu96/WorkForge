@@ -1,8 +1,6 @@
 package dev.workforge.app.WorkForge.Model;
-
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.Set;
 
 @Entity
@@ -15,6 +13,9 @@ public class Task {
     private long id;
 
     private String taskName;
+
+    @Column(nullable = false)
+    long projectId;
 
     @OneToOne
     private State state;
@@ -31,4 +32,15 @@ public class Task {
 
     @Embedded
     private TaskMetadata taskMetadata;
+
+    @Version
+    private Integer version;
+
+    @PrePersist
+    @PreUpdate
+    private void validate() {
+        if (projectId == 0) {
+            throw new IllegalStateException("projectId must not be 0");
+        }
+    }
 }

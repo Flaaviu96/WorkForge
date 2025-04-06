@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -26,23 +25,28 @@ public class ProjectController {
     }
 
     @PermissionCheck(permissionType = PermissionType.READ)
-    @GetMapping("/{projectId}/tasks")
+    @GetMapping("/projects/{projectId}/tasks")
     public ResponseEntity<List<TaskDTO>> getProjectWithTasks(@PathVariable long projectId) {
         return ResponseEntity.ok(projectService.getTasksWithoutCommentsByProjectId(projectId));
     }
 
 
     @GetMapping("/projects")
-    public ResponseEntity<List<ProjectDTO>> getProjectsWithTasks(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+    public ResponseEntity<List<ProjectDTO>> getProjectsWithTasks() {
         // Using a dummy List because the aspect will be called before getting to the business logic of the ProjectService layer.
-        return ResponseEntity.ok(projectService.getProjectsWithoutTasks(List.of(), PageRequest.of(page,size)));
+        return ResponseEntity.ok(projectService.getProjectsWithoutTasks(null));
     }
 
     @PostMapping("/projects")
     public ResponseEntity<ProjectDTO> saveProject(@RequestBody ProjectDTO projectDTO) {
+        projectService.saveNewProject(projectDTO);
+        return null;
+    }
+
+    @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
+    @PostMapping("/projects/{projectId}/assignNewTask")
+    public ResponseEntity<Void> assignNewTask(@PathVariable(name = "projectId") long projectId, @RequestBody TaskDTO taskDTO) {
+        projectService.saveNewTaskIntoProject(projectId, taskDTO);
         return null;
     }
 }

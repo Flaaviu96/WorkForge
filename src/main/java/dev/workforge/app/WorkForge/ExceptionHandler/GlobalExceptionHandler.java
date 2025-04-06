@@ -2,6 +2,7 @@ package dev.workforge.app.WorkForge.ExceptionHandler;
 
 import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
 import dev.workforge.app.WorkForge.Exceptions.ProjectNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -13,7 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ProjectNotFoundException.class)
     public ResponseEntity<String> handleProjectNotFoundException(ProjectNotFoundException projectNotFoundException){
-        return new ResponseEntity<>(projectNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
+        return returnEntityResponse(projectNotFoundException);
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -23,6 +24,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PermissionNotFoundException.class)
     public ResponseEntity<String> handlePermissionNotFoundException(PermissionNotFoundException permissionNotFoundException) {
-        return new ResponseEntity<>(permissionNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
+        return returnEntityResponse(permissionNotFoundException);
+    }
+
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<String> handleTaskNotFoundException(TaskNotFoundException taskNotFoundException) {
+        return returnEntityResponse(taskNotFoundException);
+    }
+
+    private ResponseEntity<String> returnEntityResponse(RuntimeException runtimeException) {
+        return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.NOT_FOUND);
     }
 }

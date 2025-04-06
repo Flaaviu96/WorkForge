@@ -16,6 +16,9 @@ public interface TaskMapper {
 
     TaskDTO toDTO(Task task);
 
+    @Mapping(target = "project", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "attachments", ignore = true)
     Task toTask(TaskDTO taskDTO);
 
     @Mapping(target = "commentDTO", source = "comments")

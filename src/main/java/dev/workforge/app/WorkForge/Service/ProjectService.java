@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface ProjectService {
      List<TaskDTO> getTasksWithoutCommentsByProjectId(long projectId);
      Optional<Project> getProjectByProjectId(Long projectId);
-     List<ProjectDTO> getProjectsWithoutTasks(List<Long> projectsIds, Pageable page);
-     void saveProject(ProjectDTO projectDTO);
+     List<ProjectDTO> getProjectsWithoutTasks(List<Long> projectsIds);
+     void saveNewProject(ProjectDTO projectDTO);
+     void saveNewTaskIntoProject(long projectId, TaskDTO taskDTO);
 }

@@ -19,8 +19,18 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     )
     Optional<Project> findTasksWithCommentsByProjectId(long projectId);
 
+    @Query(
+            "SELECT DISTINCT p from Project p "+
+            "LEFT JOIN FETCH p.tasks "+
+            "WHERE p.id = :projectId"
+    )
+    Optional<Project> findProjectIdWithTasks(long projectId);
+
     @Query("SELECT p FROM Project p")
     Page<Project> findProjectsByPage(Pageable pageable);
+
+    @Query("SELECT p FROM Project p WHERE p.id IN :projectsIds")
+    List<Project> findProjectsByIds(@Param("projectsIds") List<Long> projectsIds);
 
     @Query(
             "SELECT CASE WHEN COUNT(p.projectName) > 0 THEN true ELSE false END " +

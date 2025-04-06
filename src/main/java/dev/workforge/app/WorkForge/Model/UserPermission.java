@@ -1,13 +1,10 @@
 package dev.workforge.app.WorkForge.Model;
-
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "user_permission", indexes = {

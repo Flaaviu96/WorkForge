@@ -1,14 +1,19 @@
 package dev.workforge.app.WorkForge.Model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.parameters.P;
 
 import java.util.Objects;
 
 @Entity
 @Table(name = "permissions")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder(builderClassName = "PermissionBuilder")
 public class Permission {
 
@@ -40,3 +45,4 @@ public class Permission {
         return Objects.hash(id, permissionType, description);
     }
 }
+

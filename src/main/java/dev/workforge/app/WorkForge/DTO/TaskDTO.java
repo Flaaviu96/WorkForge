@@ -7,7 +7,6 @@ import java.util.List;
 public record TaskDTO(
         long id,
         String taskName,
-        StateDTO stateDTO,
         List<AttachmentDTO> attachmentDTOS,
         List<CommentDTO> commentDTOS,
         ProjectDTO projectDTO,

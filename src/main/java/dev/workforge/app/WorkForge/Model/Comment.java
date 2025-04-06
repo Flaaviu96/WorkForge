@@ -19,6 +19,9 @@ public class Comment {
     @JoinColumn(name = "task_id")
     private Task task;
 
+    @Column(nullable = false)
+    long projectId;
+
     private String author;
 
     @Column(length = 250)
@@ -31,4 +34,12 @@ public class Comment {
     @UpdateTimestamp
     @Column(nullable = false)
     private Date modifiedDate;
+
+    @PrePersist
+    @PreUpdate
+    private void validate() {
+        if (projectId == 0) {
+            throw new IllegalStateException("projectId must not be 0");
+        }
+    }
 }

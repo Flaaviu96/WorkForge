@@ -6,15 +6,22 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Aspect
 @Component
 public class AccessControlAspect {
+
+    private static final Logger logger = LoggerFactory.getLogger(AccessControlAspect.class);
 
     private final AccessControlService accessControlService;
 
@@ -22,15 +29,22 @@ public class AccessControlAspect {
         this.accessControlService = accessControlService;
     }
 
-    @Around("@annotation(permissionCheck)")
-    public void checkPermission(PermissionCheck permissionCheck, ProceedingJoinPoint joinPoint) throws Throwable {
-        Object projectId = getArgumentValue(joinPoint, permissionCheck.parameter());
+    @Around("@annotation(dev.workforge.app.WorkForge.Security.PermissionCheck)")
+    public Object checkPermission(ProceedingJoinPoint joinPoint) throws Throwable {
+        logger.info(" Aspect Intercepting Method: {}", joinPoint.getSignature().getName());
+
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        PermissionCheck permissionCheck = signature.getMethod().getAnnotation(PermissionCheck.class);
+        String parameter = permissionCheck.parameter().equals("projectId") ? permissionCheck.parameter() : "projectId";
+        Object projectId = getArgumentValue(joinPoint, parameter);
         if (projectId != null) {
             String sessionId = getCurrentHttpRequest().getRequestedSessionId();
             accessControlService.hasPermissions((long) projectId, permissionCheck.permissionType(), sessionId);
-            return;
+            return null;
         }
-        joinPoint.proceed(replaceTheArgument(joinPoint));
+        Object result = joinPoint.proceed(replaceTheArgument(joinPoint));
+
+        return result;
 
     }
 
@@ -49,12 +63,17 @@ public class AccessControlAspect {
 
     private Object[] replaceTheArgument(ProceedingJoinPoint joinPoint) {
         int[] availableProjects = accessControlService.getAvailableProjectsForCurrentUser();
-
         Object[] args = joinPoint.getArgs();
 
         Object[] newArgs = Arrays.copyOf(args, args.length);
 
-        newArgs[0] = availableProjects;
+        if (args[0] instanceof List<?>) {
+            List<Long> availableProjectsList = Arrays.stream(availableProjects)
+                    .mapToLong(i -> i)
+                    .boxed()
+                    .collect(Collectors.toList());
+            newArgs[0] = availableProjectsList;
+        }
 
         return newArgs;
     }
