@@ -1,6 +1,5 @@
 package dev.workforge.app.WorkForge.Service;
 
-import dev.workforge.app.WorkForge.DTO.PermissionDTO;
 import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
 import dev.workforge.app.WorkForge.Model.UserPermission;
 import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
@@ -20,7 +19,7 @@ public interface UserPermissionService {
       * Assign the list of permissions to the users.
       *
       */
-     void assignProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO);
+     void updateProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO);
 
      /**
       * Saving the UserPermission model into the database

@@ -1,6 +1,7 @@
 package dev.workforge.app.WorkForge.ExceptionHandler;
 
 import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.ProjectNotCreatedException;
 import dev.workforge.app.WorkForge.Exceptions.ProjectNotFoundException;
 import dev.workforge.app.WorkForge.Exceptions.TaskNotFoundException;
 import org.springframework.http.HttpStatus;

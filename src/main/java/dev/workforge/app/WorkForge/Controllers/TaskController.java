@@ -15,7 +15,7 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    public TaskController(TaskService taskService, Bucket bucket) {
+    public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
@@ -24,7 +24,7 @@ public class TaskController {
     public ResponseEntity<TaskDTO> getTaskById(
             @PathVariable long projectId,
             @PathVariable long taskId) {
-        return  ResponseEntity.ok(taskService.getTaskByIdAndProjectId(taskId, projectId));
+        return ResponseEntity.ok(taskService.getTaskByIdAndProjectId(taskId, projectId));
     }
 
     @PatchMapping()
@@ -33,8 +33,8 @@ public class TaskController {
             @PathVariable long projectId,
             @RequestBody TaskDTO taskDTO
     ) {
-        taskService.updateTask(taskDTO, projectId);
-        return ResponseEntity.ok(null);
+        TaskDTO taskDTOUpdated = taskService.updateTaskWithoutCommentsAndAttachments(taskDTO, projectId);
+        return ResponseEntity.ok(taskDTOUpdated);
     }
 
     @PostMapping("/{taskId}")

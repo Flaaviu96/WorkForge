@@ -5,6 +5,7 @@ import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Enum.GlobalEnum;
 import dev.workforge.app.WorkForge.Exceptions.ProjectNotFoundException;
 import dev.workforge.app.WorkForge.Exceptions.ProjectUpdateFailedException;
+import dev.workforge.app.WorkForge.Exceptions.WorkflowNotFoundException;
 import dev.workforge.app.WorkForge.Mapper.ProjectMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
 import dev.workforge.app.WorkForge.Model.*;
@@ -60,8 +61,9 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Transactional
-    public void saveNewTaskIntoProject(long projectId, TaskDTO taskDTO) {
-        for (int i = 0; i < 3; i++) {
+    @Override
+    public TaskDTO saveNewTaskIntoProject(long projectId, TaskDTO taskDTO) {
+        for (int counter = 0; counter < 3; counter++) {
             try {
                 Optional<Project> optionalProject = projectRepository.findProjectIdWithTasks(projectId);
                 if (optionalProject.isEmpty()) {
@@ -72,6 +74,7 @@ public class ProjectServiceImpl implements ProjectService {
                 throw new ProjectUpdateFailedException("Project update failed after multiple attempts.");
             }
         }
+        return taskDTO;
     }
 
     private void createTaskAndAssignIt(Project project, TaskDTO taskDTO) {
@@ -83,20 +86,27 @@ public class ProjectServiceImpl implements ProjectService {
         project.getTasks().add(task);
     }
 
-
     @Override
-    public void saveNewProject(ProjectDTO projectDTO) {
+    public ProjectDTO saveNewProject(ProjectDTO projectDTO) {
+
+        if (projectDTO.projectName().isEmpty() || projectDTO.projectName().isBlank()) {
+            throw new ProjectNotFoundException("The project is not valid");
+        }
+
         boolean foundProjectName = projectRepository.hasProjectNameAlready(projectDTO.projectName());
         if (foundProjectName) {
-            return;
+            throw new ProjectNotFoundException("A project with this name exists already");
         }
 
         Project project = ProjectMapper.INSTANCE.toProjectWithoutTasks(projectDTO);
         Workflow workflow = workflowService.getWorkflowById(GlobalEnum.DEFAULT_WORKFLOW.getId());
-
-        if (workflow != null) {
-            project.setWorkflow(workflow);
-            projectRepository.save(project);
+        if (workflow == null) {
+            throw new WorkflowNotFoundException("Default workflow not found");
         }
+
+        project.setWorkflow(workflow);
+        projectRepository.save(project);
+
+        return ProjectMapper.INSTANCE.toDTOWithoutTasks(project);
     }
 }

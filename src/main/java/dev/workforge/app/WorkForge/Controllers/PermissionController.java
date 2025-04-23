@@ -21,7 +21,7 @@ public class PermissionController {
 
     @PostMapping("/assign")
     public ResponseEntity<String> assignPermissionToUser(@RequestBody ProjectPermissionsDTO projectPermissionsDTO) {
-        userPermissionService.assignProjectPermissionsForUsers(projectPermissionsDTO);
+        userPermissionService.updateProjectPermissionsForUsers(projectPermissionsDTO);
         return ResponseEntity.ok("Yes");
     }
 }

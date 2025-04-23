@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -39,8 +40,9 @@ public class ProjectController {
 
     @PostMapping("/projects")
     public ResponseEntity<ProjectDTO> saveProject(@RequestBody ProjectDTO projectDTO) {
-        projectService.saveNewProject(projectDTO);
-        return null;
+        ProjectDTO savedProjectDTO = projectService.saveNewProject(projectDTO);
+        URI location = URI.create("/projects/" + savedProjectDTO.id());
+        return ResponseEntity.created(location).body(savedProjectDTO);
     }
 
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})

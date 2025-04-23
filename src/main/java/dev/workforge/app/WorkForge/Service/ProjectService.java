@@ -13,6 +13,6 @@ public interface ProjectService {
      List<TaskDTO> getTasksWithoutCommentsByProjectId(long projectId);
      Optional<Project> getProjectByProjectId(Long projectId);
      List<ProjectDTO> getProjectsWithoutTasks(List<Long> projectsIds);
-     void saveNewProject(ProjectDTO projectDTO);
-     void saveNewTaskIntoProject(long projectId, TaskDTO taskDTO);
+     ProjectDTO saveNewProject(ProjectDTO projectDTO);
+     TaskDTO saveNewTaskIntoProject(long projectId, TaskDTO taskDTO);
 }

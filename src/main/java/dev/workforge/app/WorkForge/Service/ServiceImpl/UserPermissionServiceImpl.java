@@ -2,6 +2,8 @@ package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.PermissionDTO;
 import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
+import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.UserNotFoundException;
 import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
@@ -72,7 +74,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
      */
     @Override
     @Transactional
-    public void assignProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO) {
+    public void updateProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO) {
         PermissionData dataResult = fetchingRequiredData(projectPermissionsDTO);
         if (dataResult == null) {
             return;
@@ -254,8 +256,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
         List<Permission> permissionsList = permissionService.getPermissionsByPermissionType(projectPermissionsDTO.permissionDTO());
         if (permissionsList.isEmpty()) {
-            logger.warn("The permissions are not present in the database.");
-            return null;
+            throw new PermissionNotFoundException("The permissions are not present in the database.");
         }
 
         List<Long> usersIds = projectPermissionsDTO.permissionDTO().stream()
@@ -264,7 +265,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
         List<AppUser> userList = userService.getUsersByIds(usersIds);
         if (userList.isEmpty()) {
-            return null;
+            throw new UserNotFoundException("Users linked to permissions are not found in the database.");
         }
 
         Optional<Project> project = projectService.getProjectByProjectId(projectPermissionsDTO.projectId());
