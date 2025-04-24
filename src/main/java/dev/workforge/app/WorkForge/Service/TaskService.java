@@ -1,7 +1,11 @@
 package dev.workforge.app.WorkForge.Service;
 
+import dev.workforge.app.WorkForge.DTO.AttachmentDTO;
 import dev.workforge.app.WorkForge.DTO.CommentDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 public interface TaskService {
 
@@ -31,5 +35,8 @@ public interface TaskService {
      * @param taskId the ID of the task where to store the new comment
      * @param projectId the ID of the project to which the task belongs
      */
-    void saveNewComment(CommentDTO commentDTO, long taskId, long projectId);
+    CommentDTO saveNewComment(CommentDTO commentDTO, long taskId, long projectId);
+
+
+    AttachmentDTO saveNewAttachment(MultipartFile file, long projectId, long taskId) throws IOException;
 }

@@ -1,29 +1,42 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
+import dev.workforge.app.WorkForge.DTO.AttachmentDTO;
 import dev.workforge.app.WorkForge.DTO.CommentDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.DTO.TaskMetadataDTO;
 import dev.workforge.app.WorkForge.Enum.GlobalEnum;
 import dev.workforge.app.WorkForge.Exceptions.TaskNotFoundException;
 import dev.workforge.app.WorkForge.Exceptions.TaskUpdateException;
+import dev.workforge.app.WorkForge.Mapper.AttachmentMapper;
+import dev.workforge.app.WorkForge.Mapper.CommentMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
+import dev.workforge.app.WorkForge.Model.Attachment;
 import dev.workforge.app.WorkForge.Model.Comment;
 import dev.workforge.app.WorkForge.Model.Task;
 import dev.workforge.app.WorkForge.Repository.TaskRepository;
+import dev.workforge.app.WorkForge.Service.CommentService;
 import dev.workforge.app.WorkForge.Service.TaskService;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final CommentService commentService;
+    private final FileServiceImpl fileService;
 
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService) {
         this.taskRepository = taskRepository;
+        this.commentService = commentService;
+        this.fileService = fileService;
     }
 
     @Override
@@ -49,7 +62,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public void saveNewComment(CommentDTO commentDTO, long taskId, long projectId) {
+    public CommentDTO saveNewComment(CommentDTO commentDTO, long taskId, long projectId) {
         try {
             Task task = fetchTaskAndCheck(taskId, projectId);
             Set<Comment> commentList = task.getComments();
@@ -60,9 +73,37 @@ public class TaskServiceImpl implements TaskService {
             comment.setContent(commentDTO.content());
             comment.setAuthor(commentDTO.author());
             commentList.add(comment);
+
+            Comment savedComment = commentService.saveNewComment(comment);
+            if (savedComment == null) {
+                throw new IllegalStateException("Failed to persist comment.");
+            }
+
+            return CommentMapper.INSTANCE.toCommentDTO(savedComment);
         } catch (OptimisticLockException e) {
             throw new OptimisticLockException("Another user has added a comment at the same time. Please try again.");
         }
+    }
+
+    @Override
+    public AttachmentDTO saveNewAttachment(MultipartFile file, long projectId, long taskId) throws IOException {
+        Task task = taskRepository.findTaskByIdAndProjectId(taskId, projectId);
+        Path path = fileService.saveFile(file, task.getId(), task.getProject().getProjectName());
+
+        Attachment attachment = new Attachment();
+        attachment.setTask(task);
+        attachment.setPath(path.toString());
+        attachment.setFileName(file.getName());
+        attachment.setProjectId(task.getProject().getId());
+        attachment.setSize(file.getSize());
+
+        task.getAttachments().add(attachment);
+        Task updatedTask = taskRepository.saveAndFlush(task);
+
+        Optional<Attachment> savedAttachment = updatedTask.getAttachments().stream()
+                .filter(a -> a.getFileName().equals(file.getOriginalFilename()) && a.getPath().equals(path.toString()))
+                .findFirst();
+        return AttachmentMapper.INSTANCE.toDTO(savedAttachment.orElseThrow( () -> new RuntimeException("Something")));
     }
 
     /**

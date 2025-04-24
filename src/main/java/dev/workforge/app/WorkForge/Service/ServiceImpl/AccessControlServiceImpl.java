@@ -45,6 +45,14 @@ public class AccessControlServiceImpl implements AccessControlService {
         throw new AccessDeniedException("User does not have permission to access project " + projectId);
     }
 
+    /**
+     * Checks if the user has the required permissions to access the specified project.
+     *
+     * @param permissionTypes the required permission types (e.g., READ, WRITE, ADMIN) the user must have
+     * @param permissions a map of project IDs to the sets of permissions assigned to the user
+     * @param projectId the ID of the project the user is trying to access
+     * @return true if the user has all required permissions for the project and does not have WRITE without READ; false otherwise
+     */
     private boolean hasRequiredPermissions(PermissionType[] permissionTypes, Map<Long, Set<Permission>> permissions, long projectId) {
         Set<Permission> permissionSet = permissions.get(projectId);
         if (permissionSet == null) {
@@ -71,12 +79,25 @@ public class AccessControlServiceImpl implements AccessControlService {
                 .toArray();
     }
 
+    /**
+     * Checks if the user has WRITE permission but does not have READ permission.
+     *
+     * @param permissions the set of permissions assigned to the user
+     * @return true if the user has WRITE permission and does not have READ permission; false otherwise
+     */
     private boolean hasWriteWithoutRead(Set<Permission> permissions) {
         boolean hasWrite = permissions.stream().anyMatch(permission -> permission.getPermissionType() == PermissionType.WRITE);
         boolean hasRead = permissions.stream().anyMatch(permission -> permission.getPermissionType() == PermissionType.READ);
 
         return hasWrite && !hasRead;
     }
+
+    /**
+     * Checks if any permissions for the current user have changed.
+     *
+     * @param sessionId the session ID of the user
+     * @return true if the user's permissions have changed; false otherwise
+     */
     private boolean hasPermissionsChanged(String sessionId) {
         long lastPermissionsUpdateFromRedis = userSessionService.getPermissionFromRedis(String.valueOf(retrieveSecurityUser().getId()));
         long lastPermissionsUpdateFromContext = retrieveSecurityUser().getLastPermissionsUpdate();

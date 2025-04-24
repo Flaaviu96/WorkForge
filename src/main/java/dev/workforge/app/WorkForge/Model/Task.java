@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -16,16 +17,13 @@ public class Task {
 
     private String taskName;
 
-    @Column(name = "test", nullable = false)
-    long projectId;
-
     @OneToOne
     private State state;
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.MERGE, orphanRemoval = true)
     private Set<Attachment> attachments;
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.MERGE, orphanRemoval = true)
     private Set<Comment> comments;
 
     @ManyToOne
@@ -50,11 +48,17 @@ public class Task {
         return attachments;
     }
 
-    @PrePersist
-    @PreUpdate
-    private void validate() {
-        if (projectId == 0) {
-            throw new IllegalStateException("projectId must not be 0");
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return id == task.id && Objects.equals(taskName, task.taskName) && Objects.equals(state, task.state) && Objects.equals(project, task.project) && Objects.equals(taskMetadata, task.taskMetadata) && Objects.equals(version, task.version);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, taskName, state, project, taskMetadata, version);
+    }
+
 }

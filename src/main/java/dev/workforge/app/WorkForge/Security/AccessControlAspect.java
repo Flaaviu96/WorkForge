@@ -37,12 +37,16 @@ public class AccessControlAspect {
         PermissionCheck permissionCheck = signature.getMethod().getAnnotation(PermissionCheck.class);
         String parameter = permissionCheck.parameter().equals("projectId") ? permissionCheck.parameter() : "projectId";
         Object projectId = getArgumentValue(joinPoint, parameter);
+        Object result = null;
         if (projectId != null) {
             String sessionId = getCurrentHttpRequest().getRequestedSessionId();
-            accessControlService.hasPermissions((long) projectId, permissionCheck.permissionType(), sessionId);
-            return null;
+            boolean hasPermission = accessControlService.hasPermissions((long) projectId, permissionCheck.permissionType(), sessionId);
+            if (hasPermission) {
+                result = joinPoint.proceed();
+            }
+            return result;
         }
-        Object result = joinPoint.proceed(replaceTheArgument(joinPoint));
+        result = joinPoint.proceed(replaceTheArgument(joinPoint));
 
         return result;
 

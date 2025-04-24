@@ -1,9 +1,6 @@
 package dev.workforge.app.WorkForge.ExceptionHandler;
 
-import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
-import dev.workforge.app.WorkForge.Exceptions.ProjectNotCreatedException;
-import dev.workforge.app.WorkForge.Exceptions.ProjectNotFoundException;
-import dev.workforge.app.WorkForge.Exceptions.TaskNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -31,6 +28,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TaskNotFoundException.class)
     public ResponseEntity<String> handleTaskNotFoundException(TaskNotFoundException taskNotFoundException) {
         return returnEntityResponse(taskNotFoundException);
+    }
+
+    @ExceptionHandler(TaskNotCreatedException.class)
+    public ResponseEntity<String> handleTskNotCreatedException(TaskNotCreatedException taskNotCreatedException) {
+        return returnEntityResponse(taskNotCreatedException);
     }
 
     private ResponseEntity<String> returnEntityResponse(RuntimeException runtimeException) {

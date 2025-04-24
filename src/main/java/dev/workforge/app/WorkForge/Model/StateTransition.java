@@ -36,6 +36,14 @@ public class StateTransition {
         return id == that.id && Objects.equals(fromState, that.fromState) && Objects.equals(toState, that.toState);
     }
 
+    public State getFromState() {
+        return fromState;
+    }
+
+    public State getToState() {
+        return toState;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(id, fromState, toState);

@@ -1,3 +1,6 @@
+path:
+  to:
+    attachments: attachments
 spring:
   redis:
     host: localhost
@@ -23,9 +26,3 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
-bucket4j:
-  limits:
-    - capacity: 10
-      refillTokens: 10
-      refillInterval: 1m
-      timeout: 500ms

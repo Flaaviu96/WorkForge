@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Controllers;
 
+import dev.workforge.app.WorkForge.DTO.AttachmentDTO;
 import dev.workforge.app.WorkForge.DTO.CommentDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Model.PermissionType;
@@ -8,6 +9,10 @@ import dev.workforge.app.WorkForge.Service.TaskService;
 import io.github.bucket4j.Bucket;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
 
 @RestController
 @RequestMapping("/projects/{projectId}/tasks")
@@ -39,8 +44,14 @@ public class TaskController {
 
     @PostMapping("/{taskId}")
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
-    public ResponseEntity<TaskDTO> saveNewComment(@PathVariable long projectId, @PathVariable long taskId, @RequestBody CommentDTO commentDTO) {
-        taskService.saveNewComment(commentDTO, taskId, projectId);
+    public ResponseEntity<CommentDTO> saveNewComment(@PathVariable long projectId, @PathVariable long taskId, @RequestBody CommentDTO commentDTO) {
+        return ResponseEntity.ok(taskService.saveNewComment(commentDTO, taskId, projectId));
+    }
+
+    @PostMapping("/{taskId}/attachments")
+    //@PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
+    public ResponseEntity<AttachmentDTO> saveNewAttachment(@PathVariable long projectId, @PathVariable long taskId, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        taskService.saveNewAttachment(multipartFile, projectId, taskId);
         return null;
     }
 }

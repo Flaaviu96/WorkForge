@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class AppInitializer implements CommandLineRunner {
@@ -42,7 +43,7 @@ public class AppInitializer implements CommandLineRunner {
 
         Workflow workflow = createWorkflow(states);
 
-        createAndSaveProject(workflow);
+        createAndSaveProject(workflow, states.get(0));
         createAndSaveUser("dicas","dicas");
         createAndSaveUserPermissions("dicas",1L);
     }
@@ -87,12 +88,22 @@ public class AppInitializer implements CommandLineRunner {
         return workflow;
     }
 
-    private void createAndSaveProject(Workflow workflow) {
+    private Task createTask(Project project, State state) {
+        Task task = new Task();
+        task.setTaskName("Test");
+        task.setProject(project);
+        task.setState(state);
+
+        return task;
+    }
+
+    private void createAndSaveProject(Workflow workflow, State state) {
         Project project = Project.builder()
                         .projectName("Test")
                                 .workflow(workflow)
                                         .build();
         workflow.addProject(project);
+        project.setTasks(Set.of(createTask(project, state)));
         workflowRepository.saveAndFlush(workflow);
     }
 

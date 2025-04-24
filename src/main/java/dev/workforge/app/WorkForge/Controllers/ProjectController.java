@@ -38,6 +38,7 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProjectsWithoutTasks(null));
     }
 
+
     @PostMapping("/projects")
     public ResponseEntity<ProjectDTO> saveProject(@RequestBody ProjectDTO projectDTO) {
         ProjectDTO savedProjectDTO = projectService.saveNewProject(projectDTO);
@@ -45,9 +46,19 @@ public class ProjectController {
         return ResponseEntity.created(location).body(savedProjectDTO);
     }
 
+    @PermissionCheck(permissionType = PermissionType.ADMIN)
+    @PatchMapping("/projects/{projectId}")
+    public ResponseEntity<ProjectDTO> updateProjectPartially(
+            @PathVariable Long projectId,
+            @RequestBody ProjectDTO projectDTO
+    ) {
+        ProjectDTO updateProjectDTO = projectService.updateProjectPartially(projectId, projectDTO);
+        return ResponseEntity.ok(updateProjectDTO);
+    }
+
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
-    @PostMapping("/projects/{projectId}/assignNewTask")
-    public ResponseEntity<Void> assignNewTask(@PathVariable(name = "projectId") long projectId, @RequestBody TaskDTO taskDTO) {
+    @PostMapping("/projects/{projectId}/saveNewTask")
+    public ResponseEntity<Void> saveNewTask(@PathVariable(name = "projectId") long projectId, @RequestBody TaskDTO taskDTO) {
         projectService.saveNewTaskIntoProject(projectId, taskDTO);
         return null;
     }

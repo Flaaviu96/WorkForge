@@ -6,6 +6,5 @@ import lombok.Builder;
 public record AttachmentDTO(
         long id,
         String fileName,
-        String fileType,
-        byte[] data
+        String fileType
 ) {}
