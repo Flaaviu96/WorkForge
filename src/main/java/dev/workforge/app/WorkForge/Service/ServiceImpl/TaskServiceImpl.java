@@ -5,6 +5,8 @@ import dev.workforge.app.WorkForge.DTO.CommentDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.DTO.TaskMetadataDTO;
 import dev.workforge.app.WorkForge.Enum.GlobalEnum;
+import dev.workforge.app.WorkForge.Exceptions.AttachmentNotFound;
+import dev.workforge.app.WorkForge.Exceptions.CommentInvalidException;
 import dev.workforge.app.WorkForge.Exceptions.TaskNotFoundException;
 import dev.workforge.app.WorkForge.Exceptions.TaskUpdateException;
 import dev.workforge.app.WorkForge.Mapper.AttachmentMapper;
@@ -18,10 +20,11 @@ import dev.workforge.app.WorkForge.Service.CommentService;
 import dev.workforge.app.WorkForge.Service.TaskService;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
@@ -63,16 +66,19 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public CommentDTO saveNewComment(CommentDTO commentDTO, long taskId, long projectId) {
+        if (hasNullOrEmptyFields(commentDTO)) {
+            throw new CommentInvalidException("The comment is invalid");
+        }
         try {
             Task task = fetchTaskAndCheck(taskId, projectId);
-            Set<Comment> commentList = task.getComments();
+            Set<Comment> comments = task.getComments();
 
             Comment comment = new Comment();
             comment.setTask(task);
             comment.setProjectId(projectId);
             comment.setContent(commentDTO.content());
             comment.setAuthor(commentDTO.author());
-            commentList.add(comment);
+            comments.add(comment);
 
             Comment savedComment = commentService.saveNewComment(comment);
             if (savedComment == null) {
@@ -82,6 +88,24 @@ public class TaskServiceImpl implements TaskService {
             return CommentMapper.INSTANCE.toCommentDTO(savedComment);
         } catch (OptimisticLockException e) {
             throw new OptimisticLockException("Another user has added a comment at the same time. Please try again.");
+        }
+    }
+
+    @Override
+    public void updateComment(CommentDTO commentDTO, long taskId, long projectId) {
+        if (hasNullOrEmptyFields(commentDTO)) {
+            throw new CommentInvalidException("The comment is invalid");
+        }
+        Task task = fetchTaskAndCheck(taskId, projectId);
+        Set<Comment> comments = task.getComments();
+
+        if (comments != null && !comments.isEmpty()) {
+            Optional<Comment> optionalComment = comments.stream().filter( streamComment -> streamComment.getId() == commentDTO.id()).findFirst();
+            if (optionalComment.isPresent()) {
+                Comment comment = optionalComment.get();
+                comment.setContent(commentDTO.content());
+                taskRepository.save(task);
+            }
         }
     }
 
@@ -103,7 +127,22 @@ public class TaskServiceImpl implements TaskService {
         Optional<Attachment> savedAttachment = updatedTask.getAttachments().stream()
                 .filter(a -> a.getFileName().equals(file.getOriginalFilename()) && a.getPath().equals(path.toString()))
                 .findFirst();
-        return AttachmentMapper.INSTANCE.toDTO(savedAttachment.orElseThrow( () -> new RuntimeException("Something")));
+        return AttachmentMapper.INSTANCE.toDTO(savedAttachment.orElseThrow( () -> new RuntimeException("Error")));
+    }
+
+    @Override
+    public InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException {
+        Task task = taskRepository.findTaskWithAttachments(taskId);
+        if (task == null) {
+            throw new TaskNotFoundException();
+        }
+
+        Optional<Attachment> optionalAttachment = task.getAttachments().stream().filter(attachment -> attachment.getFileName().equals(attachmentName)).findFirst();
+        if (optionalAttachment.isPresent()) {
+            return new InputStreamResource(getInputStream(optionalAttachment.get().getPath()));
+        }
+
+        throw new AttachmentNotFound("The attachment cannot be found");
     }
 
     /**
@@ -141,4 +180,16 @@ public class TaskServiceImpl implements TaskService {
             }
         }
     }
+
+    public  boolean hasNullOrEmptyFields(CommentDTO comment) {
+        if (comment == null) return true;
+
+        return comment.author() == null || comment.author().isEmpty()
+                || comment.content() == null || comment.content().isEmpty();
+    }
+
+    public InputStream getInputStream(String filePath) throws IOException {
+        return new FileInputStream(new File(filePath)); // Assuming your attachments are saved to disk
+    }
+
 }

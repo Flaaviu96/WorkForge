@@ -13,4 +13,11 @@ public interface TaskRepository extends JpaRepository<Task,Long> {
             "WHERE t.id = :taskId AND t.project.id = :projectId"
     )
     Task findTaskByIdAndProjectId(@Param("taskId") long taskId, @Param("projectId") long projectId);
+
+    @Query(
+            "SELECT t FROM Task t " +
+            "JOIN FETCH t.attachment " +
+            "WHERE t.id = :taskId "
+    )
+    Task findTaskWithAttachments(long taskId);
 }

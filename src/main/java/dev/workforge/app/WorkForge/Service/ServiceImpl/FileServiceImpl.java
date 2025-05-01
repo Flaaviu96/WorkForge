@@ -23,6 +23,8 @@ public class FileServiceImpl {
         return path;
     }
 
+    public
+
     private void uploadFile(MultipartFile file, Path path) throws IOException {
         try (InputStream inputStream = file.getInputStream();
              OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.CREATE)) {

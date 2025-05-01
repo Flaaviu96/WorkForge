@@ -20,6 +20,7 @@ public class Attachment {
     private String path;
 
     private long size;
+
     @ManyToOne
     @JoinColumn(name = "task_id")
     private Task task;
