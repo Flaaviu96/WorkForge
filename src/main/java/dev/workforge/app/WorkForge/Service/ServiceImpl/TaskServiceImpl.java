@@ -1,29 +1,26 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
-import dev.workforge.app.WorkForge.DTO.AttachmentDTO;
-import dev.workforge.app.WorkForge.DTO.CommentDTO;
-import dev.workforge.app.WorkForge.DTO.TaskDTO;
-import dev.workforge.app.WorkForge.DTO.TaskMetadataDTO;
+import dev.workforge.app.WorkForge.DTO.*;
 import dev.workforge.app.WorkForge.Enum.GlobalEnum;
-import dev.workforge.app.WorkForge.Exceptions.AttachmentNotFound;
-import dev.workforge.app.WorkForge.Exceptions.CommentInvalidException;
-import dev.workforge.app.WorkForge.Exceptions.TaskNotFoundException;
-import dev.workforge.app.WorkForge.Exceptions.TaskUpdateException;
+import dev.workforge.app.WorkForge.Exceptions.*;
 import dev.workforge.app.WorkForge.Mapper.AttachmentMapper;
 import dev.workforge.app.WorkForge.Mapper.CommentMapper;
+import dev.workforge.app.WorkForge.Mapper.StateMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
 import dev.workforge.app.WorkForge.Model.Attachment;
 import dev.workforge.app.WorkForge.Model.Comment;
+import dev.workforge.app.WorkForge.Model.State;
 import dev.workforge.app.WorkForge.Model.Task;
 import dev.workforge.app.WorkForge.Repository.TaskRepository;
 import dev.workforge.app.WorkForge.Service.CommentService;
 import dev.workforge.app.WorkForge.Service.TaskService;
+import dev.workforge.app.WorkForge.Service.WorkflowService;
+import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.*;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -35,11 +32,13 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final CommentService commentService;
     private final FileServiceImpl fileService;
+    private final WorkflowService workflowService;
 
-    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService) {
+    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService, WorkflowService workflowService) {
         this.taskRepository = taskRepository;
         this.commentService = commentService;
         this.fileService = fileService;
+        this.workflowService = workflowService;
     }
 
     @Override
@@ -51,9 +50,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public TaskDTO updateTaskWithoutCommentsAndAttachments(TaskDTO taskDTO, long projectId) {
+        DTOValidator.validate(taskDTO);
         try {
             if (taskDTO.id() == GlobalEnum.INVALID_ID.getId() || projectId == GlobalEnum.INVALID_ID.getId()) {
-                throw new TaskUpdateException("The ID of the task is not valid " + taskDTO.id());
+                throw new TaskUpdateException(ErrorMessages.INVALID_ID + taskDTO.id());
             }
             Task task = fetchTaskAndCheck(taskDTO.id(), projectId);
             applyNonNullUpdates(task, taskDTO);
@@ -66,9 +66,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public CommentDTO saveNewComment(CommentDTO commentDTO, long taskId, long projectId) {
-        if (hasNullOrEmptyFields(commentDTO)) {
-            throw new CommentInvalidException("The comment is invalid");
-        }
+        DTOValidator.validate(commentDTO);
         try {
             Task task = fetchTaskAndCheck(taskId, projectId);
             Set<Comment> comments = task.getComments();
@@ -93,9 +91,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void updateComment(CommentDTO commentDTO, long taskId, long projectId) {
-        if (hasNullOrEmptyFields(commentDTO)) {
-            throw new CommentInvalidException("The comment is invalid");
-        }
+        DTOValidator.validate(commentDTO);
         Task task = fetchTaskAndCheck(taskId, projectId);
         Set<Comment> comments = task.getComments();
 
@@ -134,7 +130,7 @@ public class TaskServiceImpl implements TaskService {
     public InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException {
         Task task = taskRepository.findTaskWithAttachments(taskId);
         if (task == null) {
-            throw new TaskNotFoundException();
+            throw new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND);
         }
 
         Optional<Attachment> optionalAttachment = task.getAttachments().stream().filter(attachment -> attachment.getFileName().equals(attachmentName)).findFirst();
@@ -142,7 +138,28 @@ public class TaskServiceImpl implements TaskService {
             return new InputStreamResource(getInputStream(optionalAttachment.get().getPath()));
         }
 
-        throw new AttachmentNotFound("The attachment cannot be found");
+        throw new AttachmentNotFound(ErrorMessages.ATTACHMENT_NOT_FOUND);
+    }
+
+    @Override
+    public void updateTaskState(long workflowId, long taskId, StateDTO stateFromDTO, StateDTO stateToDTO) {
+        DTOValidator.validate(stateFromDTO);
+        DTOValidator.validate(stateToDTO);
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND));
+        boolean result = workflowService.isTransitionValid(
+                workflowId,
+                StateMapper.INSTANCE.fromDTO(stateFromDTO),
+                StateMapper.INSTANCE.fromDTO(stateToDTO)
+        );
+
+        if (result) {
+            State state = workflowService.getStateByName(workflowId, stateToDTO.name());
+            task.setState(state);
+            taskRepository.save(task);
+            return;
+        }
+
+        throw new StateTransitionNotValid(ErrorMessages.STATE_TRANSITION_NOT_VALID);
     }
 
     /**
@@ -151,7 +168,7 @@ public class TaskServiceImpl implements TaskService {
     private Task fetchTaskAndCheck(long taskId, long projectId) {
         Task task =  taskRepository.findTaskByIdAndProjectId(taskId, projectId);
         if (task == null) {
-            throw new TaskNotFoundException();
+            throw new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND);
         }
         return task;
     }
@@ -164,6 +181,9 @@ public class TaskServiceImpl implements TaskService {
      * @param taskDTO the {@code TaskDTO} containing the new details to update the task with
      */
     private void applyNonNullUpdates(Task task, TaskDTO taskDTO) {
+        if (task == null) {
+            throw new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND);
+        }
         if (taskDTO.taskName() != null) {
             task.setTaskName(taskDTO.taskName());
         }
@@ -181,15 +201,7 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    public  boolean hasNullOrEmptyFields(CommentDTO comment) {
-        if (comment == null) return true;
-
-        return comment.author() == null || comment.author().isEmpty()
-                || comment.content() == null || comment.content().isEmpty();
-    }
-
     public InputStream getInputStream(String filePath) throws IOException {
-        return new FileInputStream(new File(filePath)); // Assuming your attachments are saved to disk
+        return new FileInputStream(new File(filePath));
     }
-
 }

@@ -6,6 +6,7 @@ import dev.workforge.app.WorkForge.Model.StateTransition;
 import dev.workforge.app.WorkForge.Model.Workflow;
 import dev.workforge.app.WorkForge.Repository.WorkflowRepository;
 import dev.workforge.app.WorkForge.Service.WorkflowService;
+import dev.workforge.app.WorkForge.Trigger.AbstractTrigger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,12 +31,26 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     @Override
-    public void buildWorkflow(long id, State stateFrom, State stateTo) {
+    public boolean isTransitionValid(long id, State stateFrom, State stateTo) {
         Workflow workflow = workflowRepository.findWorkflowWithStateTransitions(id);
-        List<State> states = workflowFactory.getStatesTo(id, stateFrom);
+        if (workflow == null) throw new WorkflowNotFoundException("The workflow is not found in the database");
+        Map<State, AbstractTrigger> states = workflowFactory.getStatesTo(id, stateFrom);
         if (states == null) {
             workflowFactory.addWorkflow(workflow);
             states = workflowFactory.getStatesTo(id, stateFrom);
+            return states.entrySet().stream()
+                    .anyMatch(stateAbstractTriggerEntry -> stateAbstractTriggerEntry.getKey().getName().equals(stateTo.getName()));
         }
+        return false;
+    }
+
+    @Override
+    public State getStateToByName(long workflowId, String stateName) {
+        return workflowFactory.getStateToByName(workflowId, stateName);
+    }
+
+    @Override
+    public void triggerStateTransition(long workflowId, State stateFrom, State stateTo) {
+
     }
 }

@@ -44,11 +44,11 @@ public class TaskController {
         return ResponseEntity.ok(taskDTOUpdated);
     }
 
-    @PatchMapping("/{taskId}/state")
-    @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
-    public ResponseEntity<?> updateTaskState(TaskDTO taskDTO) {
-
-    }
+//    @PatchMapping("/{taskId}/state")
+//    @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
+//    public ResponseEntity<?> updateTaskState(TaskDTO taskDTO) {
+//
+//    }
 
     @PostMapping("/{taskId}")
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})

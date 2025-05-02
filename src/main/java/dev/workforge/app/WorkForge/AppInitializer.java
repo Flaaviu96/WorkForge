@@ -2,6 +2,8 @@ package dev.workforge.app.WorkForge;
 
 import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.*;
+import dev.workforge.app.WorkForge.Trigger.AbstractTrigger;
+import dev.workforge.app.WorkForge.Trigger.TriggerSendEmail;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,8 +25,9 @@ public class AppInitializer implements CommandLineRunner {
     private final UserPermissionRepository userPermissionRepository;
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AbstractTriggerRepository abstractTriggerRepository;
 
-    public AppInitializer(ProjectRepository projectRepository, UserRepository userRepository, TaskRepository taskRepository, StateRepository stateRepository, StateTransitionRepository stateTransitionRepository, WorkflowRepository workflowRepository, UserPermissionRepository userPermissionRepository, PermissionRepository permissionRepository, PasswordEncoder passwordEncoder) {
+    public AppInitializer(ProjectRepository projectRepository, UserRepository userRepository, TaskRepository taskRepository, StateRepository stateRepository, StateTransitionRepository stateTransitionRepository, WorkflowRepository workflowRepository, UserPermissionRepository userPermissionRepository, PermissionRepository permissionRepository, PasswordEncoder passwordEncoder, AbstractTriggerRepository abstractTriggerRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
@@ -34,6 +37,7 @@ public class AppInitializer implements CommandLineRunner {
         this.userPermissionRepository = userPermissionRepository;
         this.permissionRepository = permissionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.abstractTriggerRepository = abstractTriggerRepository;
     }
 
     @Override
@@ -41,7 +45,7 @@ public class AppInitializer implements CommandLineRunner {
         List<State> states = createStates();
         stateRepository.saveAllAndFlush(states);
 
-        Workflow workflow = createWorkflow(states);
+        Workflow workflow = createWorkflow(states, createAbstractTrigger());
 
         createAndSaveProject(workflow, states.get(0));
         createAndSaveUser("dicas","dicas");
@@ -68,7 +72,12 @@ public class AppInitializer implements CommandLineRunner {
         return List.of(start, progress, onHold, end);
     }
 
-    private Workflow createWorkflow(List<State> states) {
+    private AbstractTrigger createAbstractTrigger() {
+        AbstractTrigger abstractTrigger = new TriggerSendEmail();
+        return abstractTriggerRepository.save(abstractTrigger);
+    }
+
+    private Workflow createWorkflow(List<State> states, AbstractTrigger abstractTrigger) {
         Workflow workflow = new Workflow();
         workflow.setDescription("This is a description");
         workflow.setWorkflowName("Default workflow");

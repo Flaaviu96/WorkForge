@@ -12,5 +12,9 @@ public interface WorkflowService {
      */
     Workflow getWorkflowById(long id);
 
-    void buildWorkflow(long id, State stateFrom, State stateTo);
+    boolean isTransitionValid(long id, State stateFrom, State stateTo);
+
+    State getStateToByName(long workflowId, String stateName);
+
+    void triggerStateTransition(long workflowId, State stateFrom, State stateTo);
 }

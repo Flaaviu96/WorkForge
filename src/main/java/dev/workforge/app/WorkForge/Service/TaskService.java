@@ -2,6 +2,7 @@ package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.DTO.AttachmentDTO;
 import dev.workforge.app.WorkForge.DTO.CommentDTO;
+import dev.workforge.app.WorkForge.DTO.StateDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,4 +72,7 @@ public interface TaskService {
      *  @throws IOException if the attachment file cannot be read
      */
     InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException;
+
+
+    void updateTaskState(long workflowId, long taskId, StateDTO stateFromDTO, StateDTO stateToDTO);
 }

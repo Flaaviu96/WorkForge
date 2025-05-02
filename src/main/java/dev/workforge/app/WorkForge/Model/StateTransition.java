@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Model;
 
+import dev.workforge.app.WorkForge.Trigger.AbstractTrigger;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,7 +27,9 @@ public class StateTransition {
     @JoinColumn(name = "Workflow_id")
     private Workflow workflow;
 
-    //private Trigger trigger;
+    @ManyToOne
+    @JoinColumn(name = "trigger_id")
+    private AbstractTrigger trigger;
 
     @Override
     public boolean equals(Object o) {
