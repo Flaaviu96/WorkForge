@@ -29,7 +29,6 @@ public class WorkflowFactory {
 
     private void cleanupExpiredGroups() {
         if (stateTransitionMap.isEmpty()) return;
-        long currentTime = System.currentTimeMillis();
         Iterator<Map.Entry<Long, List<StateTransitionGroup>>> entryIterator = stateTransitionMap.entrySet().iterator();
         while (entryIterator.hasNext()) {
             Map.Entry<Long, List<StateTransitionGroup>> entry = entryIterator.next();
@@ -99,26 +98,33 @@ public class WorkflowFactory {
     }
 
     public State getStateToByName(long workflowId, String stateName) {
-        List<StateTransitionGroup> group = stateTransitionMap.get(workflowId);
-        if (group == null) {
+        List<StateTransitionGroup> groups = stateTransitionMap.get(workflowId);
+        if (groups == null) {
             return null;
         }
-        return null;
 
-//        return group.stream().
-//        return group.getToStates().keySet().stream()
-//                .filter(abstractTrigger -> abstractTrigger.getName().equals(stateName))
-//                .findFirst()
-//                .orElse(null);
+        for (StateTransitionGroup group : groups) {
+            for (Map.Entry<State, AbstractTrigger> entry : group.getToStates().entrySet()) {
+                if (entry.getKey().getName().equals(stateName)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
     }
 
-//    public AbstractTrigger getTrigger(long workflowId, State state) {
-//        StateTransitionGroup group = stateTransitionMap.get(workflowId);
-//        if (group == null) {
-//            return null;
-//        }
-//
-//    }
+    public AbstractTrigger getTrigger(long workflowId, String stateFrom, State stateTo) {
+        List<StateTransitionGroup> groups = stateTransitionMap.get(workflowId);
+        if (groups == null) {
+            return null;
+        }
+        for (StateTransitionGroup group : groups) {
+            if (group.getFromState().getName().equals(stateFrom)) {
+                return group.toStates.get(stateTo);
+            }
+        }
+        return null;
+    }
 
     private void buildStateTransitionGroup(Workflow workflow) {
         Map<State, Map<State, AbstractTrigger>> stateListMap = workflow.getStateTransitions().stream()

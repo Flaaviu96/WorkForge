@@ -5,10 +5,9 @@ import dev.workforge.app.WorkForge.DTO.StateDTO;
 import dev.workforge.app.WorkForge.DTO.StateTransitionDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Enum.GlobalEnum;
-import dev.workforge.app.WorkForge.Exceptions.ProjectNotFoundException;
-import dev.workforge.app.WorkForge.Exceptions.ProjectUpdateFailedException;
-import dev.workforge.app.WorkForge.Exceptions.TaskNotCreatedException;
-import dev.workforge.app.WorkForge.Exceptions.WorkflowNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.ProjectException;
+import dev.workforge.app.WorkForge.Exceptions.TaskException;
+import dev.workforge.app.WorkForge.Exceptions.WorkflowException;
 import dev.workforge.app.WorkForge.Mapper.ProjectMapper;
 import dev.workforge.app.WorkForge.Mapper.StateTransitionMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
@@ -18,8 +17,10 @@ import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.ProjectService;
 import dev.workforge.app.WorkForge.Service.StateTransitionService;
 import dev.workforge.app.WorkForge.Service.WorkflowService;
+import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<TaskDTO> getTasksWithoutCommentsByProjectId(long projectId) {
         Project project = projectRepository.findTasksWithCommentsByProjectId(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: "+projectId));
+                .orElseThrow(() -> new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND));
         return ProjectMapper.INSTANCE.toDTOWithTasks(project).taskDTO();
     }
 
@@ -53,7 +54,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (project.isPresent()) {
             return project;
         }
-        throw new ProjectNotFoundException("Project not found with id: "+projectId);
+        throw new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
     @Override
@@ -63,7 +64,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (!projectList.isEmpty()) {
             return ProjectMapper.INSTANCE.toProjectsDTOWithoutTasks(projectList.stream().toList());
         }
-        throw new ProjectNotFoundException("No projects found");
+        throw new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
     @Transactional
@@ -71,21 +72,21 @@ public class ProjectServiceImpl implements ProjectService {
     public TaskDTO saveNewTaskIntoProject(long projectId, TaskDTO taskDTO) {
 
         if (taskDTO != null && (taskDTO.taskName().isEmpty() || taskDTO.taskName().isBlank())) {
-            throw new TaskNotCreatedException("The name of the task is empty or blank");
+            throw new TaskException(ErrorMessages.INVALID_ID, HttpStatus.BAD_REQUEST);
         }
 
         for (int counter = 0; counter < 3; counter++) {
             try {
                 Optional<Project> optionalProject = projectRepository.findProjectWithTasks(projectId);
                 if (optionalProject.isEmpty()) {
-                    throw new ProjectNotFoundException("Project not found for the given ID.");
+                    throw new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 Project project = optionalProject.get();
                 Task task = TaskMapper.INSTANCE.toTask(taskDTO);
                 project.getTasks().add(task);
                 task.setProject(optionalProject.get());
             } catch (OptimisticLockException e) {
-                throw new ProjectUpdateFailedException("Project update failed after multiple attempts.");
+                throw new ProjectException(ErrorMessages.PROJECT_UPDATE_FAILED, HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -98,7 +99,7 @@ public class ProjectServiceImpl implements ProjectService {
         Optional<Project> optionalProject = projectRepository.findProjectWithWorkflow(projectId);
 
         if (optionalProject.isEmpty()) {
-            throw new ProjectNotFoundException("Project not found for the given ID.");
+            throw new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         Project project = optionalProject.get();
@@ -122,18 +123,18 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDTO saveNewProject(ProjectDTO projectDTO) {
 
         if (projectDTO.projectName().isEmpty() || projectDTO.projectName().isBlank()) {
-            throw new ProjectNotFoundException("The project is not valid");
+            throw new ProjectException(ErrorMessages.INVALID_ID, HttpStatus.BAD_REQUEST);
         }
 
         boolean foundProjectName = projectRepository.hasProjectNameAlready(projectDTO.projectName());
         if (foundProjectName) {
-            throw new ProjectNotFoundException("A project with this name exists already");
+            throw new ProjectException(ErrorMessages.PROJECT_INVALID, HttpStatus.BAD_REQUEST);
         }
 
         Project project = ProjectMapper.INSTANCE.toProjectWithoutTasks(projectDTO);
         Workflow workflow = workflowService.getWorkflowById(GlobalEnum.DEFAULT_WORKFLOW.getId());
         if (workflow == null) {
-            throw new WorkflowNotFoundException("Default workflow not found");
+            throw new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         project.setWorkflow(workflow);

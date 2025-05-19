@@ -1,11 +1,13 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.PermissionDTO;
-import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.PermissionException;
 import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Repository.PermissionRepository;
 import dev.workforge.app.WorkForge.Service.PermissionService;
+import dev.workforge.app.WorkForge.Util.ErrorMessages;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +32,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .toList();
         List<Permission> permissions = permissionRepository.findPermissionByPermissionType(permissionTypeList);
         if (permissions.isEmpty()) {
-            throw new PermissionNotFoundException("The permission is not found");
+            throw new PermissionException(ErrorMessages.PERMISSIONS_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
         return permissions;
     }

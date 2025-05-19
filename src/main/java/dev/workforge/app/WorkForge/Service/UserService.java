@@ -1,6 +1,5 @@
 package dev.workforge.app.WorkForge.Service;
 
-import dev.workforge.app.WorkForge.Exceptions.UserNotFoundException;
 import dev.workforge.app.WorkForge.Model.AppUser;
 
 import java.util.List;

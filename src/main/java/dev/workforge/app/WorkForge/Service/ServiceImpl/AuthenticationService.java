@@ -7,6 +7,8 @@ import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseCookie;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -55,7 +57,7 @@ public class AuthenticationService {
             securityUserService.loadUserPermissionsIntoUserDetails(securityUser);
             userSessionService.storeUserInRedis(sessionId, securityUser);
         } catch (AuthenticationException e) {
-            System.out.println("Authentication failed: " + e.getMessage());
+            throw new AuthenticationCredentialsNotFoundException("Bad credentials");
         }
     }
 
@@ -68,5 +70,14 @@ public class AuthenticationService {
             userSessionService.removeUserFromRedis(sessionId);
             SecurityContextHolder.clearContext();
         }
+    }
+
+    private void createCookie(String sessionId) {
+        ResponseCookie.from("sessionId", sessionId)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .build();
     }
 }

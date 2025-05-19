@@ -16,5 +16,7 @@ public interface WorkflowService {
 
     State getStateToByName(long workflowId, String stateName);
 
-    void triggerStateTransition(long workflowId, State stateFrom, State stateTo);
+    void triggerStateTransition(long workflowId, String stateFrom, State stateTo);
+
+
 }

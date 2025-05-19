@@ -1,17 +1,17 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
-import dev.workforge.app.WorkForge.Exceptions.WorkflowNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.WorkflowException;
 import dev.workforge.app.WorkForge.Model.State;
-import dev.workforge.app.WorkForge.Model.StateTransition;
 import dev.workforge.app.WorkForge.Model.Workflow;
 import dev.workforge.app.WorkForge.Repository.WorkflowRepository;
 import dev.workforge.app.WorkForge.Service.WorkflowService;
 import dev.workforge.app.WorkForge.Trigger.AbstractTrigger;
+import dev.workforge.app.WorkForge.Util.ErrorMessages;
+import org.hibernate.jdbc.Work;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
@@ -27,13 +27,13 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     public Workflow getWorkflowById(long id) {
         return workflowRepository.findById(id)
-                .orElseThrow(() -> new WorkflowNotFoundException("Workflow not found"));
+                .orElseThrow(() -> new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND));
     }
 
     @Override
     public boolean isTransitionValid(long id, State stateFrom, State stateTo) {
         Workflow workflow = workflowRepository.findWorkflowWithStateTransitions(id);
-        if (workflow == null) throw new WorkflowNotFoundException("The workflow is not found in the database");
+        if (workflow == null) throw new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND);
         Map<State, AbstractTrigger> states = workflowFactory.getStatesTo(id, stateFrom);
         if (states == null) {
             workflowFactory.addWorkflow(workflow);
@@ -50,7 +50,10 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     @Override
-    public void triggerStateTransition(long workflowId, State stateFrom, State stateTo) {
-
+    public void triggerStateTransition(long workflowId, String stateFrom, State stateTo) {
+        AbstractTrigger abstractTrigger = workflowFactory.getTrigger(workflowId, stateFrom, stateTo);
+        if (abstractTrigger != null) {
+            abstractTrigger.fire();
+        }
     }
 }

@@ -19,6 +19,7 @@ import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
@@ -53,7 +54,7 @@ public class TaskServiceImpl implements TaskService {
         DTOValidator.validate(taskDTO);
         try {
             if (taskDTO.id() == GlobalEnum.INVALID_ID.getId() || projectId == GlobalEnum.INVALID_ID.getId()) {
-                throw new TaskUpdateException(ErrorMessages.INVALID_ID + taskDTO.id());
+                throw new TaskException(ErrorMessages.INVALID_ID + taskDTO.id(), HttpStatus.BAD_REQUEST);
             }
             Task task = fetchTaskAndCheck(taskDTO.id(), projectId);
             applyNonNullUpdates(task, taskDTO);
@@ -130,7 +131,7 @@ public class TaskServiceImpl implements TaskService {
     public InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException {
         Task task = taskRepository.findTaskWithAttachments(taskId);
         if (task == null) {
-            throw new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND);
+            throw new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         Optional<Attachment> optionalAttachment = task.getAttachments().stream().filter(attachment -> attachment.getFileName().equals(attachmentName)).findFirst();
@@ -138,14 +139,14 @@ public class TaskServiceImpl implements TaskService {
             return new InputStreamResource(getInputStream(optionalAttachment.get().getPath()));
         }
 
-        throw new AttachmentNotFound(ErrorMessages.ATTACHMENT_NOT_FOUND);
+        throw new AttachmentException(ErrorMessages.ATTACHMENT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
     @Override
     public void updateTaskState(long workflowId, long taskId, StateDTO stateFromDTO, StateDTO stateToDTO) {
         DTOValidator.validate(stateFromDTO);
         DTOValidator.validate(stateToDTO);
-        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
         boolean result = workflowService.isTransitionValid(
                 workflowId,
                 StateMapper.INSTANCE.fromDTO(stateFromDTO),
@@ -153,13 +154,13 @@ public class TaskServiceImpl implements TaskService {
         );
 
         if (result) {
-            State state = workflowService.getStateByName(workflowId, stateToDTO.name());
+            State state = workflowService.getStateToByName(workflowId, stateToDTO.name());
             task.setState(state);
+            workflowService.triggerStateTransition(workflowId,stateFromDTO.name(), state);
             taskRepository.save(task);
             return;
         }
-
-        throw new StateTransitionNotValid(ErrorMessages.STATE_TRANSITION_NOT_VALID);
+        throw new StateTransitionException(ErrorMessages.STATE_TRANSITION_NOT_VALID, HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -168,7 +169,7 @@ public class TaskServiceImpl implements TaskService {
     private Task fetchTaskAndCheck(long taskId, long projectId) {
         Task task =  taskRepository.findTaskByIdAndProjectId(taskId, projectId);
         if (task == null) {
-            throw new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND);
+            throw new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
         return task;
     }
@@ -182,7 +183,7 @@ public class TaskServiceImpl implements TaskService {
      */
     private void applyNonNullUpdates(Task task, TaskDTO taskDTO) {
         if (task == null) {
-            throw new TaskNotFoundException(ErrorMessages.TASK_NOT_FOUND);
+            throw new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
         if (taskDTO.taskName() != null) {
             task.setTaskName(taskDTO.taskName());

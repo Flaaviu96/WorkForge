@@ -14,6 +14,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -35,7 +36,7 @@ public class ProjectController {
     @GetMapping("/projects")
     public ResponseEntity<List<ProjectDTO>> getProjectsWithTasks() {
         // Using a dummy List because the aspect will be called before getting to the business logic of the ProjectService layer.
-        return ResponseEntity.ok(projectService.getProjectsWithoutTasks(null));
+        return ResponseEntity.ok(projectService.getProjectsWithoutTasks(new ArrayList<Long>()));
     }
 
 

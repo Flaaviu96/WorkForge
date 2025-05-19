@@ -2,8 +2,8 @@ package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.PermissionDTO;
 import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
-import dev.workforge.app.WorkForge.Exceptions.PermissionNotFoundException;
-import dev.workforge.app.WorkForge.Exceptions.UserNotFoundException;
+import dev.workforge.app.WorkForge.Exceptions.PermissionException;
+import dev.workforge.app.WorkForge.Exceptions.UserException;
 import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
@@ -12,7 +12,9 @@ import dev.workforge.app.WorkForge.Service.PermissionService;
 import dev.workforge.app.WorkForge.Service.ProjectService;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
 import dev.workforge.app.WorkForge.Service.UserService;
+import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -256,7 +258,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
         List<Permission> permissionsList = permissionService.getPermissionsByPermissionType(projectPermissionsDTO.permissionDTO());
         if (permissionsList.isEmpty()) {
-            throw new PermissionNotFoundException("The permissions are not present in the database.");
+            throw new PermissionException(ErrorMessages.PERMISSIONS_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         List<Long> usersIds = projectPermissionsDTO.permissionDTO().stream()
@@ -265,7 +267,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
         List<AppUser> userList = userService.getUsersByIds(usersIds);
         if (userList.isEmpty()) {
-            throw new UserNotFoundException("Users linked to permissions are not found in the database.");
+            throw new UserException(ErrorMessages.USERS_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         Optional<Project> project = projectService.getProjectByProjectId(projectPermissionsDTO.projectId());

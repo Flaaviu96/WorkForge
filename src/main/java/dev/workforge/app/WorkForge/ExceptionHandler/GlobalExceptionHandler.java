@@ -10,32 +10,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ProjectNotFoundException.class)
-    public ResponseEntity<String> handleProjectNotFoundException(ProjectNotFoundException projectNotFoundException){
-        return returnEntityResponse(projectNotFoundException);
-    }
-
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<String> handleAuthenticationFailedException(AuthenticationException authenticationException) {
-        return new ResponseEntity<>(authenticationException.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(PermissionNotFoundException.class)
-    public ResponseEntity<String> handlePermissionNotFoundException(PermissionNotFoundException permissionNotFoundException) {
-        return returnEntityResponse(permissionNotFoundException);
-    }
-
-    @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<String> handleTaskNotFoundException(TaskNotFoundException taskNotFoundException) {
-        return returnEntityResponse(taskNotFoundException);
-    }
-
-    @ExceptionHandler(TaskNotCreatedException.class)
-    public ResponseEntity<String> handleTskNotCreatedException(TaskNotCreatedException taskNotCreatedException) {
-        return returnEntityResponse(taskNotCreatedException);
-    }
-
-    private ResponseEntity<String> returnEntityResponse(RuntimeException runtimeException) {
-        return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.NOT_FOUND);
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ErrorDetails> handleProjectNotFoundException(AppException exception){
+        ErrorDetails errorDetails = new ErrorDetails();
+        errorDetails.setMessage(exception.getMessage());
+        errorDetails.setStatus(exception.getStatus().value());
+        return new ResponseEntity<>(errorDetails, exception.getStatus());
     }
 }

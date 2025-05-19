@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Getter
 @Setter
 @Builder
 @AllArgsConstructor
@@ -47,6 +46,22 @@ public class Project {
     public void removeTask(Task task) {
         tasks.remove(task);
         task.setProject(null);
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public String getProjectDescription() {
+        return projectDescription;
+    }
+
+    public Workflow getWorkflow() {
+        return workflow;
     }
 
     public Set<Task> getTasks() {
