@@ -33,9 +33,9 @@ public class LoginController {
         authenticationService.login(userDTO, request.getSession().getId());
         ResponseCookie cookie = ResponseCookie.from("SESSIONID", request.getSession().getId())
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("None")
+                .secure(false)
+                .sameSite("None")
+                .path("/")
                 .maxAge(Duration.ofHours(1))
                 .build();
 

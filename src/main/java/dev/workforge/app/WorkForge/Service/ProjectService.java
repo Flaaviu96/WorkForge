@@ -15,7 +15,7 @@ public interface ProjectService {
       * @param projectId the ID of the project
       * @return a list of tasks without comments
       */
-     List<TaskDTO> getTasksWithoutCommentsByProjectId(long projectId);
+     ProjectDTO getTasksWithoutCommentsByProjectId(long projectId);
 
      /**
       * Retrieves the project with the specified ID.

@@ -1,6 +1,5 @@
 package dev.workforge.app.WorkForge.Config;
 
-import dev.workforge.app.WorkForge.Security.SecurityUser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;

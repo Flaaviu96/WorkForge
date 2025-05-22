@@ -36,16 +36,32 @@ public class Task {
     @Version
     private Integer version;
 
-    public Project getProject() {
-        return project;
+    public long getId() {
+        return id;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public Set<Attachment> getAttachments() {
+        return attachments;
     }
 
     public Set<Comment> getComments() {
         return comments;
     }
 
-    public Set<Attachment> getAttachments() {
-        return attachments;
+    public Project getProject() {
+        return project;
+    }
+
+    public TaskMetadata getTaskMetadata() {
+        return taskMetadata;
     }
 
     @Override

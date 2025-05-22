@@ -12,8 +12,7 @@ import java.util.Set;
 @Mapper(componentModel = "spring", uses = CommentMapper.class)
 public interface TaskMapper {
 
-    TaskMapper INSTANCE = Mappers.getMapper(TaskMapper.class);
-
+    @Mapping(target = "state", source = "state.name")
     TaskDTO toDTO(Task task);
 
     @Mapping(target = "project", ignore = true)

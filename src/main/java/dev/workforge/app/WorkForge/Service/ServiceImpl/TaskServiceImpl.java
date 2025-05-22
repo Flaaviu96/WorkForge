@@ -34,18 +34,20 @@ public class TaskServiceImpl implements TaskService {
     private final CommentService commentService;
     private final FileServiceImpl fileService;
     private final WorkflowService workflowService;
+    private final TaskMapper taskMapper;
 
-    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService, WorkflowService workflowService) {
+    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService, WorkflowService workflowService, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.commentService = commentService;
         this.fileService = fileService;
         this.workflowService = workflowService;
+        this.taskMapper = taskMapper;
     }
 
     @Override
     public TaskDTO getTaskByIdAndProjectId(long taskId, long projectId) {
         Task task = fetchTaskAndCheck(taskId, projectId);
-        return TaskMapper.INSTANCE.toDTO(task);
+        return taskMapper.toDTO(task);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class TaskServiceImpl implements TaskService {
             }
             Task task = fetchTaskAndCheck(taskDTO.id(), projectId);
             applyNonNullUpdates(task, taskDTO);
-            return TaskMapper.INSTANCE.toDTO(task);
+            return taskMapper.toDTO(task);
         } catch (OptimisticLockException ex) {
             throw new OptimisticLockException("Task was modified by another user. Please refresh and try again.", ex);
         }

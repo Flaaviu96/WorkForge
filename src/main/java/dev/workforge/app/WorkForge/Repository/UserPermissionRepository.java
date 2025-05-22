@@ -2,6 +2,7 @@ package dev.workforge.app.WorkForge.Repository;
 
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Model.UserPermission;
+import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

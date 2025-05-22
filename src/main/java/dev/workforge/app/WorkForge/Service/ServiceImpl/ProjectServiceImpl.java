@@ -12,6 +12,7 @@ import dev.workforge.app.WorkForge.Mapper.ProjectMapper;
 import dev.workforge.app.WorkForge.Mapper.StateTransitionMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
 import dev.workforge.app.WorkForge.Model.*;
+import dev.workforge.app.WorkForge.Projections.ProjectProjection;
 import dev.workforge.app.WorkForge.Repository.ProjectRepository;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.ProjectService;
@@ -34,18 +35,22 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final StateTransitionService stateTransitionService;
     private final WorkflowService workflowService;
+    private final ProjectMapper projectMapper;
+    private final TaskMapper taskMapper;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository, StateTransitionService stateTransitionService, WorkflowService workflowService) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, StateTransitionService stateTransitionService, WorkflowService workflowService, ProjectMapper projectMapper, TaskMapper taskMapper) {
         this.projectRepository = projectRepository;
         this.stateTransitionService = stateTransitionService;
         this.workflowService = workflowService;
+        this.projectMapper = projectMapper;
+        this.taskMapper = taskMapper;
     }
 
     @Override
-    public List<TaskDTO> getTasksWithoutCommentsByProjectId(long projectId) {
-        Project project = projectRepository.findTasksWithCommentsByProjectId(projectId)
+    public ProjectDTO getTasksWithoutCommentsByProjectId(long projectId) {
+        ProjectProjection project = projectRepository.findTasksWithCommentsByProjectId(projectId)
                 .orElseThrow(() -> new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND));
-        return ProjectMapper.INSTANCE.toDTOWithTasks(project).taskDTO();
+        return projectMapper.toDTOWithTasks(project);
     }
 
     @Override
@@ -62,7 +67,7 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDTO> getProjectsWithoutTasks(List<Long> projectsIds) {
         List<Project> projectList = projectRepository.findProjectsByIds(projectsIds);
         if (!projectList.isEmpty()) {
-            return ProjectMapper.INSTANCE.toProjectsDTOWithoutTasks(projectList.stream().toList());
+            return projectMapper.toProjectsDTOWithoutTasks(projectList.stream().toList());
         }
         throw new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
@@ -82,7 +87,7 @@ public class ProjectServiceImpl implements ProjectService {
                     throw new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 Project project = optionalProject.get();
-                Task task = TaskMapper.INSTANCE.toTask(taskDTO);
+                Task task = taskMapper.toTask(taskDTO);
                 project.getTasks().add(task);
                 task.setProject(optionalProject.get());
             } catch (OptimisticLockException e) {
@@ -113,10 +118,10 @@ public class ProjectServiceImpl implements ProjectService {
         if (projectDTO.workflowId() != 0 && project.getWorkflow().getId() != projectDTO.workflowId()) {
             Workflow workflow = workflowService.getWorkflowById(projectDTO.workflowId());
             project.setWorkflow(workflow);
-            projectDTO.transitions().putAll(getWorkflowStateTransitionMap(workflow.getId()));
+          //  projectDTO.transitions().putAll(getWorkflowStateTransitionMap(workflow.getId()));
         }
 
-        return ProjectMapper.INSTANCE.toDTOWithoutTasks(project);
+        return projectMapper.toDTOWithoutTasks(project);
     }
 
     @Override
@@ -131,7 +136,7 @@ public class ProjectServiceImpl implements ProjectService {
             throw new ProjectException(ErrorMessages.PROJECT_INVALID, HttpStatus.BAD_REQUEST);
         }
 
-        Project project = ProjectMapper.INSTANCE.toProjectWithoutTasks(projectDTO);
+        Project project = projectMapper.toProjectWithoutTasks(projectDTO);
         Workflow workflow = workflowService.getWorkflowById(GlobalEnum.DEFAULT_WORKFLOW.getId());
         if (workflow == null) {
             throw new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -140,7 +145,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setWorkflow(workflow);
         projectRepository.save(project);
 
-        return ProjectMapper.INSTANCE.toDTOWithoutTasks(project);
+        return projectMapper.toDTOWithoutTasks(project);
     }
 
     private Map<StateDTO, List<StateDTO>> getWorkflowStateTransitionMap(long workflowId) {

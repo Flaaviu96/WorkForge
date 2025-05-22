@@ -1,4 +1,4 @@
-package dev.workforge.app.WorkForge.Repository;
+package dev.workforge.app.WorkForge.Projections;
 
 import dev.workforge.app.WorkForge.Model.Permission;
 

@@ -28,8 +28,9 @@ public class ProjectController {
 
     @PermissionCheck(permissionType = PermissionType.READ)
     @GetMapping("/projects/{projectId}/tasks")
-    public ResponseEntity<List<TaskDTO>> getProjectWithTasks(@PathVariable long projectId) {
-        return ResponseEntity.ok(projectService.getTasksWithoutCommentsByProjectId(projectId));
+    public ResponseEntity<ProjectDTO> getProjectWithTasks(@PathVariable long projectId) {
+        ProjectDTO projectDTO = projectService.getTasksWithoutCommentsByProjectId(projectId);
+        return ResponseEntity.ok(projectDTO);
     }
 
 

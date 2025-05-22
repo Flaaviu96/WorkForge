@@ -1,6 +1,7 @@
 package dev.workforge.app.WorkForge.Repository;
 
 import dev.workforge.app.WorkForge.Model.Project;
+import dev.workforge.app.WorkForge.Projections.ProjectProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -10,11 +11,12 @@ import java.util.Optional;
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query(
-            "SELECT p FROM Project p " +
-            "LEFT JOIN FETCH p.tasks t " +
+            "SELECT p.id AS projectId, p.projectName AS projectName, task AS tasks " +
+            "FROM Project p " +
+            "LEFT JOIN p.tasks task " +
             "WHERE p.id = :projectId"
     )
-    Optional<Project> findTasksWithCommentsByProjectId(long projectId);
+    Optional<ProjectProjection> findTasksWithCommentsByProjectId(long projectId);
 
     @Query(
             "SELECT DISTINCT p from Project p "+

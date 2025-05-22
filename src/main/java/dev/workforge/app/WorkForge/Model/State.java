@@ -30,4 +30,12 @@ public class State {
     public int hashCode() {
         return Objects.hash(id, name, stateType);
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public StateType getStateType() {
+        return stateType;
+    }
 }

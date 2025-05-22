@@ -2,7 +2,7 @@ package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
 import dev.workforge.app.WorkForge.Model.UserPermission;
-import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
+import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 
 import java.util.List;
 

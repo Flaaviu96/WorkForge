@@ -5,7 +5,7 @@ import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
 import dev.workforge.app.WorkForge.Exceptions.PermissionException;
 import dev.workforge.app.WorkForge.Exceptions.UserException;
 import dev.workforge.app.WorkForge.Model.*;
-import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
+import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
 import dev.workforge.app.WorkForge.Security.UserSessionService;
 import dev.workforge.app.WorkForge.Service.PermissionService;

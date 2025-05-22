@@ -2,7 +2,7 @@ package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Model.PermissionType;
-import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
+import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;

@@ -1,10 +1,8 @@
 package dev.workforge.app.WorkForge;
 
 import dev.workforge.app.WorkForge.Model.AppUser;
-import dev.workforge.app.WorkForge.Repository.UserPermissionProjection;
+import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Security.SecurityImpl.SecurityUserImpl;
-import dev.workforge.app.WorkForge.Security.SecurityUser;
-import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.ServiceImpl.SecurityUserServiceImpl;
 import dev.workforge.app.WorkForge.Service.UserPermissionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +13,6 @@ import org.mockito.Mock;
 import dev.workforge.app.WorkForge.Model.Permission;
 import java.util.*;
 import dev.workforge.app.WorkForge.Model.PermissionType;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
