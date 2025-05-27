@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Model;
 
+import dev.workforge.app.WorkForge.Util.ProjectKeyGenerator;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +27,9 @@ public class Project {
     private String projectName;
 
     private String projectDescription;
+
+    @Column(nullable = false, unique = true, updatable = false)
+    private String projectKey;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Task> tasks = new HashSet<>();

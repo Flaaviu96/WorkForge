@@ -24,4 +24,10 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
             "WHERE u.username IN :usersIds"
     )
     List<AppUser> findUsersByIds(List<Long> usersIds);
+
+    @Query(
+            "SELECT u FROM AppUser u " +
+            "WHERE LOWER(u.username) LIKE LOWER(CONCAT(:prefix, '%'))"
+    )
+    List<AppUser> findUsersByPrefix(String prefix);
 }

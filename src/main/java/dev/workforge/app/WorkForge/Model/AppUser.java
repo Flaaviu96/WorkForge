@@ -3,6 +3,8 @@ package dev.workforge.app.WorkForge.Model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
 @Getter
 @Setter
@@ -15,6 +17,16 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     @SequenceGenerator(name = "user_seq", sequenceName = "user_id_seq", allocationSize = 50)
     private long id;
+
+    @Column(nullable = false, unique = true, updatable = false)
+    private UUID uuid;
+
+    @PrePersist
+    public void generateUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+    }
 
     public AppUser() {
 
@@ -29,4 +41,12 @@ public class AppUser {
 
     @OneToOne
     private AppUserDetails userDetails;
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
 }

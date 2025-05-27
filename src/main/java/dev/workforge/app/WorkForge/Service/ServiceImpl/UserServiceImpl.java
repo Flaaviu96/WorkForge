@@ -1,6 +1,9 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
+import dev.workforge.app.WorkForge.DTO.UserViewDTO;
 import dev.workforge.app.WorkForge.Exceptions.UserException;
+import dev.workforge.app.WorkForge.Mapper.TaskMapper;
+import dev.workforge.app.WorkForge.Mapper.UserMapper;
 import dev.workforge.app.WorkForge.Model.AppUser;
 import dev.workforge.app.WorkForge.Repository.UserRepository;
 import dev.workforge.app.WorkForge.Security.SecurityImpl.SecurityUserImpl;
@@ -19,9 +22,11 @@ import java.util.List;
 public class UserServiceImpl implements UserDetailsService, UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -47,5 +52,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     public AppUser getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserException(ErrorMessages.USER_NOT_FOUND, HttpStatus.NOT_FOUND));
+    }
+
+    @Override
+    public List<UserViewDTO> getUsersByPrefix(String prefix) {
+        List<AppUser> appUsers = userRepository.findUsersByPrefix(prefix);
+        return appUsers.isEmpty() ? List.of() : userMapper.toDTOList(appUsers);
     }
 }

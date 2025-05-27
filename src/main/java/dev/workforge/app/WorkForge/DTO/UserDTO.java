@@ -6,4 +6,4 @@ import lombok.Builder;
 public record UserDTO(
         String username,
         String password
-){}
+) {}

@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Service;
 
+import dev.workforge.app.WorkForge.DTO.UserViewDTO;
 import dev.workforge.app.WorkForge.Model.AppUser;
 
 import java.util.List;
@@ -16,4 +17,7 @@ public interface UserService {
     List<AppUser> getUsersByIds(List<Long> usernames);
 
     AppUser getUserByUsername(String username);
+
+    List<UserViewDTO> getUsersByPrefix(String prefix);
+
 }
