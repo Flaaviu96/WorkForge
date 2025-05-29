@@ -4,6 +4,7 @@ import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.*;
 import dev.workforge.app.WorkForge.Trigger.AbstractTrigger;
 import dev.workforge.app.WorkForge.Trigger.TriggerSendEmail;
+import dev.workforge.app.WorkForge.Util.ProjectKeyGenerator;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -110,6 +111,7 @@ public class AppInitializer implements CommandLineRunner {
         Project project = Project.builder()
                         .projectName("Test")
                                 .workflow(workflow)
+                .projectKey(ProjectKeyGenerator.generateKey("Test"))
                                         .build();
         workflow.addProject(project);
         project.setTasks(Set.of(createTask(project, state)));

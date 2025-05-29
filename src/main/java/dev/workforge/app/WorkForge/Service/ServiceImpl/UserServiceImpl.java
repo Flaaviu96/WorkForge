@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     public List<UserViewDTO> getUsersByPrefix(String prefix) {
-        List<AppUser> appUsers = userRepository.findUsersByPrefix(prefix);
+        List<AppUser> appUsers = userRepository.findUsersByPrefix(prefix.trim());
         return appUsers.isEmpty() ? List.of() : userMapper.toDTOList(appUsers);
     }
 }
