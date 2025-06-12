@@ -42,4 +42,41 @@ public class Comment {
             throw new IllegalStateException("projectId must not be 0");
         }
     }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", task=" + task +
+                ", projectId=" + projectId +
+                ", author='" + author + '\'' +
+                ", content='" + content + '\'' +
+                ", createdDate=" + createdDate +
+                ", modifiedDate=" + modifiedDate +
+                '}';
+    }
 }

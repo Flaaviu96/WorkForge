@@ -23,4 +23,24 @@ public class TaskMetadata {
     @UpdateTimestamp
     @Column(nullable = false)
     private Date modifiedDate;
+
+    public String getAssignedTo() {
+        return assignedTo;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
 }

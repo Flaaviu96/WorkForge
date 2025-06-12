@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<AppUser, Long> {
@@ -30,4 +31,10 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
             "WHERE LOWER(u.username) LIKE LOWER(CONCAT(:prefix, '%'))"
     )
     List<AppUser> findUsersByPrefix(String prefix);
+
+    @Query(
+            "SELECT u FROM AppUser u " +
+                    "WHERE u.uuid = :uuid"
+    )
+    AppUser userExists(@Param("uuid") UUID uuid);
 }

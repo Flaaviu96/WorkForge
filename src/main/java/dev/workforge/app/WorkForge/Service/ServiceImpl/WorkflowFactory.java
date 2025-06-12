@@ -93,8 +93,17 @@ public class WorkflowFactory {
                 .orElse(Collections.emptyMap());
     }
 
+    public Map<State, List<State>> getWorkflowForSpecificProject(long projectId) {
+        List<StateTransitionGroup> transitionGroups = stateTransitionMap.get(projectId);
+        return transitionGroups.stream()
+                .collect(Collectors.toMap(
+                        StateTransitionGroup::getFromState,
+                        group -> new ArrayList<>(group.getToStates().keySet())
+                ));
+    }
+
     public void addWorkflow(Workflow workflow) {
-        //buildStateTransitionGroup(workflow);
+        buildStateTransitionGroup(workflow);
     }
 
     public State getStateToByName(long workflowId, String stateName) {

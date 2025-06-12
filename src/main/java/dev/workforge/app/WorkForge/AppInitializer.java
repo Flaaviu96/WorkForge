@@ -98,13 +98,25 @@ public class AppInitializer implements CommandLineRunner {
         return workflow;
     }
 
-    private Task createTask(Project project, State state) {
+    private Task createTask(Project project, State state, String taskName, Comment comment) {
         Task task = new Task();
         task.setTaskName("Test");
+        task.setTaskName(taskName);
         task.setProject(project);
         task.setState(state);
-
+        if (comment != null) {
+            task.getComments().add(comment);
+            comment.setTask(task);
+        }
         return task;
+    }
+
+    private Comment createComment(String content, String author, long projectId) {
+        Comment comment = new Comment();
+        comment.setContent(content);
+        comment.setAuthor(author);
+        comment.setProjectId(projectId);
+        return comment;
     }
 
     private void createAndSaveProject(Workflow workflow, State state) {
@@ -114,7 +126,14 @@ public class AppInitializer implements CommandLineRunner {
                 .projectKey(ProjectKeyGenerator.generateKey("Test"))
                                         .build();
         workflow.addProject(project);
-        project.setTasks(Set.of(createTask(project, state)));
+        Comment comment = createComment("This is a test for the frontend", "dicas", 1);
+        Task task = createTask(project, state, "test1",comment);
+        TaskMetadata taskMetadata = new TaskMetadata();
+        taskMetadata.setDescription("This is a dummy description for the task");
+        taskMetadata.setAssignedTo("Dicas");
+        taskMetadata.setCreatedBy("dicas");
+        task.setTaskMetadata(taskMetadata);
+        project.setTasks(Set.of(task));
         workflowRepository.saveAndFlush(workflow);
     }
 
@@ -140,7 +159,12 @@ public class AppInitializer implements CommandLineRunner {
                 .description("Write right")
                 .build();
 
-        permissionRepository.saveAllAndFlush(List.of(readPermission, writePermission));
+        Permission projectAdmin = Permission.builder()
+                .permissionType(PermissionType.PROJECT_ADMIN)
+                .description("Write right")
+                .build();
+
+        permissionRepository.saveAllAndFlush(List.of(readPermission, writePermission, projectAdmin));
 
         UserPermission userPermission = new UserPermission();
         userPermission.setProject(project);

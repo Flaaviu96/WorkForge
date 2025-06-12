@@ -35,10 +35,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p WHERE p.id IN :projectsIds")
     List<Project> findProjectsByIds(List<Long> projectsIds);
 
-    @Query(
-            "SELECT CASE WHEN COUNT(p.projectName) > 0 THEN true ELSE false END " +
-                    "FROM Project p " +
-                    "WHERE p.projectName = :projectName"
-    )
-    boolean hasProjectNameAlready(String projectName);
+    boolean existsByProjectName(String projectName);
+    boolean existsByProjectKey(String projectKey);
+
 }

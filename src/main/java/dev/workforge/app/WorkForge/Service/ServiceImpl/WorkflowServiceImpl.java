@@ -1,6 +1,9 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
+import dev.workforge.app.WorkForge.DTO.StateDTO;
+import dev.workforge.app.WorkForge.DTO.WorkflowDTO;
 import dev.workforge.app.WorkForge.Exceptions.WorkflowException;
+import dev.workforge.app.WorkForge.Mapper.StateMapper;
 import dev.workforge.app.WorkForge.Model.State;
 import dev.workforge.app.WorkForge.Model.Workflow;
 import dev.workforge.app.WorkForge.Repository.WorkflowRepository;
@@ -11,17 +14,21 @@ import org.hibernate.jdbc.Work;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
 
     private final WorkflowRepository workflowRepository;
     private final WorkflowFactory workflowFactory;
+    private final StateMapper stateMapper;
 
-    public WorkflowServiceImpl(WorkflowRepository workflowRepository, WorkflowFactory workflowFactory) {
+    public WorkflowServiceImpl(WorkflowRepository workflowRepository, WorkflowFactory workflowFactory, StateMapper stateMapper) {
         this.workflowRepository = workflowRepository;
         this.workflowFactory = workflowFactory;
+        this.stateMapper = stateMapper;
     }
 
     @Override
@@ -55,5 +62,24 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (abstractTrigger != null) {
             abstractTrigger.fire();
         }
+    }
+
+    @Override
+    public WorkflowDTO getWorkflowByProjectId(int projectId) {
+        Map<State, List<State>> stateDTOListMap = workflowFactory.getWorkflowForSpecificProject(projectId);
+        if (stateDTOListMap == null) {
+            throw new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        return new WorkflowDTO(projectId, transformWorkflowToDTO(stateDTOListMap));
+    }
+
+    private Map<StateDTO, List<StateDTO>> transformWorkflowToDTO(Map<State, List<State>> stateDTOListMap) {
+        return stateDTOListMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> stateMapper.toDTO(entry.getKey()),
+                        entry -> entry.getValue().stream()
+                                .map(stateMapper::toDTO)
+                                .collect(Collectors.toList())
+                ));
     }
 }

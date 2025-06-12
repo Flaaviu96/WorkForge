@@ -40,12 +40,6 @@ public class TaskController {
         return ResponseEntity.ok(taskDTOUpdated);
     }
 
-//    @PatchMapping("/{taskId}/state")
-//    @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
-//    public ResponseEntity<?> updateTaskState(TaskDTO taskDTO) {
-//
-//    }
-
     @PostMapping("/{taskId}")
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
     public ResponseEntity<CommentDTO> saveNewComment(@PathVariable long projectId, @PathVariable long taskId, @RequestBody CommentDTO commentDTO) {

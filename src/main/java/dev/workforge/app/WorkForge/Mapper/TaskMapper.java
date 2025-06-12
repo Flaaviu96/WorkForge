@@ -13,6 +13,8 @@ import java.util.Set;
 public interface TaskMapper {
 
     @Mapping(target = "state", source = "state.name")
+    @Mapping(target = "commentDTOS", source = "comments")
+    @Mapping(target = "taskMetadataDTO", source = "taskMetadata")
     TaskDTO toDTO(Task task);
 
     @Mapping(target = "project", ignore = true)

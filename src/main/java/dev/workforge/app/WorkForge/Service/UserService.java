@@ -4,6 +4,7 @@ import dev.workforge.app.WorkForge.DTO.UserViewDTO;
 import dev.workforge.app.WorkForge.Model.AppUser;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UserService {
 
@@ -19,5 +20,7 @@ public interface UserService {
     AppUser getUserByUsername(String username);
 
     List<UserViewDTO> getUsersByPrefix(String prefix);
+
+    AppUser getUserByUUID(UUID uuid);
 
 }

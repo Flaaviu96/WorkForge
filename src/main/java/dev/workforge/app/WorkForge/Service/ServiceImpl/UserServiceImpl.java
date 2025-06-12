@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserDetailsService, UserService {
@@ -58,5 +59,10 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     public List<UserViewDTO> getUsersByPrefix(String prefix) {
         List<AppUser> appUsers = userRepository.findUsersByPrefix(prefix.trim());
         return appUsers.isEmpty() ? List.of() : userMapper.toDTOList(appUsers);
+    }
+
+    @Override
+    public AppUser getUserByUUID(UUID uuid) {
+        return userRepository.userExists(uuid);
     }
 }

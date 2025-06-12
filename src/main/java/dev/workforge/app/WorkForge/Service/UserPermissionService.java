@@ -1,10 +1,13 @@
 package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
+import dev.workforge.app.WorkForge.Model.AppUser;
+import dev.workforge.app.WorkForge.Model.Project;
 import dev.workforge.app.WorkForge.Model.UserPermission;
 import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UserPermissionService {
 
@@ -21,9 +24,6 @@ public interface UserPermissionService {
       */
      void updateProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO);
 
-     /**
-      * Saving the UserPermission model into the database
-      * @param userPermission is the model
-      */
-     void saveUserPermission(UserPermission userPermission);
+     void createDefaultOwnerPermissions(UUID user, Project project);
+
 }

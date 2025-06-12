@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Mapper;
 
+import dev.workforge.app.WorkForge.DTO.CreateProjectDTO;
 import dev.workforge.app.WorkForge.DTO.ProjectDTO;
 import dev.workforge.app.WorkForge.Model.Project;
 import dev.workforge.app.WorkForge.Projections.ProjectProjection;
@@ -18,6 +19,8 @@ public interface ProjectMapper {
 
 //    @Mapping(target = "taskDTO", source = "tasks")
     ProjectDTO toDTOWithTasks(ProjectProjection projectProjection);
+
+    Project createProject(CreateProjectDTO createProjectDTO);
 
     @Named("toDTOWithoutTasks")
     @Mapping(target = "tasks", ignore = true)

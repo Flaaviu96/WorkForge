@@ -8,10 +8,7 @@ import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
 import dev.workforge.app.WorkForge.Security.UserSessionService;
-import dev.workforge.app.WorkForge.Service.PermissionService;
-import dev.workforge.app.WorkForge.Service.ProjectService;
-import dev.workforge.app.WorkForge.Service.UserPermissionService;
-import dev.workforge.app.WorkForge.Service.UserService;
+import dev.workforge.app.WorkForge.Service.*;
 import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -35,7 +32,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     private final UserPermissionRepository userPermissionRepository;
     private final PermissionService permissionService;
     private final UserService userService;
-    private final ProjectService projectService;
+    private final ProjectReadService projectService;
     private final UserSessionService userSessionService;
 
     /**
@@ -46,7 +43,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
      * @param projectService           Service for managing projects.
      * @param userSessionService       Service for managing user sessions.
      */
-    public UserPermissionServiceImpl(UserPermissionRepository userPermissionRepository, PermissionService permissionService, UserService userService, ProjectService projectService, UserSessionService userSessionService) {
+    public UserPermissionServiceImpl(UserPermissionRepository userPermissionRepository, PermissionService permissionService, UserService userService, ProjectReadService projectService, UserSessionService userSessionService) {
         this.userPermissionRepository = userPermissionRepository;
         this.permissionService = permissionService;
         this.userService = userService;
@@ -151,6 +148,23 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         }
     }
 
+    @Override
+    public void createDefaultOwnerPermissions(UUID user, Project project) {
+        AppUser appUser = userService.getUserByUUID(user);
+        if (appUser == null) {
+            throw new UserException(ErrorMessages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        List<PermissionType> defaultTypes = List.of(PermissionType.READ, PermissionType.WRITE, PermissionType.PROJECT_ADMIN);
+        List<Permission> permissions = permissionService.getPermissionsByPermissionType(defaultTypes);
+
+        UserPermission userPermission = new UserPermission();
+        userPermission.setUser(appUser);
+        userPermission.setProject(project);
+        userPermission.setPermissions(new HashSet<>(permissions));
+
+        userPermissionRepository.save(userPermission);
+    }
+
     /**
      * Handles the logic for adding new permissions to an existing permission record.
      * Checks if the new permissions are already present for the user and, if not, adds them to the record.
@@ -226,11 +240,6 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                 .build();
     }
 
-    @Override
-    public void saveUserPermission(UserPermission userPermission) {
-        userPermissionRepository.save(userPermission);
-    }
-
     /**
      * Helper method that groups permissions by user ID from the provided list of PermissionDTO objects.
      *
@@ -256,7 +265,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
             return null;
         }
 
-        List<Permission> permissionsList = permissionService.getPermissionsByPermissionType(projectPermissionsDTO.permissionDTO());
+        List<Permission> permissionsList = permissionService.getPermissionsByDTO(projectPermissionsDTO.permissionDTO());
         if (permissionsList.isEmpty()) {
             throw new PermissionException(ErrorMessages.PERMISSIONS_NOT_FOUND, HttpStatus.NOT_FOUND);
         }

@@ -7,5 +7,7 @@ import dev.workforge.app.WorkForge.Model.PermissionType;
 import java.util.List;
 
 public interface PermissionService {
-    List<Permission> getPermissionsByPermissionType(List<PermissionDTO> permissionDTOS);
+    List<Permission> getPermissionsByDTO(List<PermissionDTO> permissionDTOS);
+
+    List<Permission> getPermissionsByPermissionType(List<PermissionType> types);
 }

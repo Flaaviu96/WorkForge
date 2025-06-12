@@ -21,12 +21,16 @@ public class PermissionServiceImpl implements PermissionService {
         this.permissionRepository = permissionRepository;
     }
 
+    private PermissionType mapPermissionDTO(PermissionDTO permissionDTO) {
+        return permissionDTO.permissionType();
+    }
+
     @Override
-    public List<Permission> getPermissionsByPermissionType(List<PermissionDTO> permissionTypes) {
-        if (permissionTypes.isEmpty()) {
+    public List<Permission> getPermissionsByDTO(List<PermissionDTO> permissionDTOS) {
+        if (permissionDTOS == null || permissionDTOS.isEmpty()) {
             return Collections.emptyList();
         }
-        List<PermissionType> permissionTypeList = permissionTypes.stream()
+        List<PermissionType> permissionTypeList = permissionDTOS.stream()
                 .map(this::mapPermissionDTO)
                 .distinct()
                 .toList();
@@ -37,7 +41,23 @@ public class PermissionServiceImpl implements PermissionService {
         return permissions;
     }
 
-    private PermissionType mapPermissionDTO(PermissionDTO permissionDTO) {
-        return permissionDTO.permissionType();
+    @Override
+    public List<Permission> getPermissionsByPermissionType(List<PermissionType> types) {
+        if (types == null || types.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<PermissionType> permissionTypeList = types.stream()
+                .distinct()
+                .toList();
+        return fetchPermissions(permissionTypeList);
+    }
+
+    private List<Permission> fetchPermissions(List<PermissionType> types) {
+        List<Permission> permissions = permissionRepository.findPermissionByPermissionType(types);
+        if (permissions.isEmpty()) {
+            throw new PermissionException(ErrorMessages.PERMISSIONS_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+
+        return permissions;
     }
 }

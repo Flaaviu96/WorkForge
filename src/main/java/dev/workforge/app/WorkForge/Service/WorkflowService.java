@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Service;
 
+import dev.workforge.app.WorkForge.DTO.WorkflowDTO;
 import dev.workforge.app.WorkForge.Model.State;
 import dev.workforge.app.WorkForge.Model.Workflow;
 
@@ -18,5 +19,5 @@ public interface WorkflowService {
 
     void triggerStateTransition(long workflowId, String stateFrom, State stateTo);
 
-
+    WorkflowDTO getWorkflowByProjectId(int projectId);
 }

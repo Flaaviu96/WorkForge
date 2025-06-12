@@ -1,16 +1,13 @@
 package dev.workforge.app.WorkForge.Controllers;
 
+import dev.workforge.app.WorkForge.DTO.CreateProjectDTO;
 import dev.workforge.app.WorkForge.DTO.ProjectDTO;
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
-import dev.workforge.app.WorkForge.Service.ProjectService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.hibernate.query.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import dev.workforge.app.WorkForge.Service.ProjectReadService;
+import dev.workforge.app.WorkForge.Service.ProjectWriteService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -20,16 +17,18 @@ import java.util.List;
 @RestController
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectWriteService projectService;
+    private final ProjectReadService projectReadService;
 
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectWriteService projectService, ProjectReadService projectReadService) {
         this.projectService = projectService;
+        this.projectReadService = projectReadService;
     }
 
     @PermissionCheck(permissionType = PermissionType.READ)
     @GetMapping("/projects/{projectId}/tasks")
     public ResponseEntity<ProjectDTO> getProjectWithTasks(@PathVariable long projectId) {
-        ProjectDTO projectDTO = projectService.getTasksWithoutCommentsByProjectId(projectId);
+        ProjectDTO projectDTO = projectReadService.getTasksWithoutCommentsByProjectId(projectId);
         return ResponseEntity.ok(projectDTO);
     }
 
@@ -37,18 +36,18 @@ public class ProjectController {
     @GetMapping("/projects")
     public ResponseEntity<List<ProjectDTO>> getProjectsWithTasks() {
         // Using a dummy List because the aspect will be called before getting to the business logic of the ProjectService layer.
-        return ResponseEntity.ok(projectService.getProjectsWithoutTasks(new ArrayList<Long>()));
+        return ResponseEntity.ok(projectReadService.getProjectsWithoutTasks(new ArrayList<Long>()));
     }
 
 
     @PostMapping("/projects")
-    public ResponseEntity<ProjectDTO> saveProject(@RequestBody ProjectDTO projectDTO) {
-        ProjectDTO savedProjectDTO = projectService.saveNewProject(projectDTO);
+    public ResponseEntity<ProjectDTO> saveProject(@RequestBody CreateProjectDTO createProjectDTO) {
+        ProjectDTO savedProjectDTO = projectService.saveNewProject(createProjectDTO);
         URI location = URI.create("/projects/" + savedProjectDTO.id());
         return ResponseEntity.created(location).body(savedProjectDTO);
     }
 
-    @PermissionCheck(permissionType = PermissionType.ADMIN)
+    @PermissionCheck(permissionType = PermissionType.PROJECT_ADMIN)
     @PatchMapping("/projects/{projectId}")
     public ResponseEntity<ProjectDTO> updateProjectPartially(
             @PathVariable Long projectId,
