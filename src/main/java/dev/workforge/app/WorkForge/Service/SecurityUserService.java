@@ -1,5 +1,6 @@
 package dev.workforge.app.WorkForge.Service;
 
+import dev.workforge.app.WorkForge.Model.PermissionType;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
@@ -26,4 +27,7 @@ public interface SecurityUserService {
      * @param userDetails the user details containing updated permissions.
      */
     void refreshUserPermissionsForUserDetails (UserDetails userDetails);
+
+
+    List<PermissionType> getProjectPermissionForUser(long projectId);
 }

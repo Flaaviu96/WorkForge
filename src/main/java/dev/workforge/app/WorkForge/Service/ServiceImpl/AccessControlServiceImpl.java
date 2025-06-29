@@ -1,11 +1,14 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
+import dev.workforge.app.WorkForge.Exceptions.PermissionException;
 import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Security.UserSessionService;
 import dev.workforge.app.WorkForge.Service.AccessControlService;
 import dev.workforge.app.WorkForge.Service.SecurityUserService;
+import dev.workforge.app.WorkForge.Util.ErrorMessages;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -42,7 +45,7 @@ public class AccessControlServiceImpl implements AccessControlService {
             return true;
         }
 
-        throw new AccessDeniedException("User does not have permission to access project " + projectId);
+        throw new PermissionException(ErrorMessages.PROJECT_VIEW_PERMISSION_DENIED, HttpStatus.FORBIDDEN);
     }
 
     /**

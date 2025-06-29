@@ -13,4 +13,6 @@ public class ErrorMessages {
     public static final String PROJECT_NOT_FOUND = "Project not found";
     public static final String PROJECT_INVALID = "A project with this name exists already";
     public static final String PROJECT_UPDATE_FAILED = "Project update failed after multiple attempts.";
+    public static final String PROJECT_VIEW_PERMISSION_DENIED = "You do not have permission to view this project.";
+
 }

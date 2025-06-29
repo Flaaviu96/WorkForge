@@ -7,5 +7,5 @@ import java.util.Set;
 public interface ProjectProjection {
     Long getProjectId();
     String getProjectName();
-    Set<Task> getTasks();
+    Set<TaskProjection> getTasks();
 }

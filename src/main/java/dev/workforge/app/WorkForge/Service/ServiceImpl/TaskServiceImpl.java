@@ -7,12 +7,10 @@ import dev.workforge.app.WorkForge.Mapper.AttachmentMapper;
 import dev.workforge.app.WorkForge.Mapper.CommentMapper;
 import dev.workforge.app.WorkForge.Mapper.StateMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
-import dev.workforge.app.WorkForge.Model.Attachment;
-import dev.workforge.app.WorkForge.Model.Comment;
-import dev.workforge.app.WorkForge.Model.State;
-import dev.workforge.app.WorkForge.Model.Task;
+import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.TaskRepository;
 import dev.workforge.app.WorkForge.Service.CommentService;
+import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.TaskService;
 import dev.workforge.app.WorkForge.Service.WorkflowService;
 import dev.workforge.app.WorkForge.Util.ErrorMessages;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,19 +34,22 @@ public class TaskServiceImpl implements TaskService {
     private final FileServiceImpl fileService;
     private final WorkflowService workflowService;
     private final TaskMapper taskMapper;
+    private final SecurityUserService securityUserService;
 
-    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService, WorkflowService workflowService, TaskMapper taskMapper) {
+    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService, WorkflowService workflowService, TaskMapper taskMapper, SecurityUserService securityUserService) {
         this.taskRepository = taskRepository;
         this.commentService = commentService;
         this.fileService = fileService;
         this.workflowService = workflowService;
         this.taskMapper = taskMapper;
+        this.securityUserService = securityUserService;
     }
 
     @Override
     public TaskDTO getTaskByIdAndProjectId(long taskId, long projectId) {
         Task task = fetchTaskAndCheck(taskId, projectId);
-        return taskMapper.toDTO(task);
+        List<PermissionType> permissionTypeList = securityUserService.getProjectPermissionForUser(projectId);
+        return taskMapper.toDTO(task, permissionTypeList);
     }
 
     @Override

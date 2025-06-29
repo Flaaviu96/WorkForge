@@ -71,4 +71,8 @@ public class Project {
     public Set<Task> getTasks() {
         return tasks;
     }
+
+    public String getProjectKey() {
+        return projectKey;
+    }
 }

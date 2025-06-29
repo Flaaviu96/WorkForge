@@ -133,6 +133,8 @@ public class AppInitializer implements CommandLineRunner {
         taskMetadata.setAssignedTo("Dicas");
         taskMetadata.setCreatedBy("dicas");
         task.setTaskMetadata(taskMetadata);
+        TaskTimeTracking taskTimeTracking = new TaskTimeTracking();
+        task.setTaskTimeTracking(taskTimeTracking);
         project.setTasks(Set.of(task));
         workflowRepository.saveAndFlush(workflow);
     }

@@ -34,6 +34,9 @@ public class Task {
     @Embedded
     private TaskMetadata taskMetadata;
 
+    @Embedded
+    private TaskTimeTracking taskTimeTracking;
+
     @Version
     private Integer version;
 

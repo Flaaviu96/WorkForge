@@ -43,6 +43,17 @@ public class SecurityUserServiceImpl implements SecurityUserService {
         addPermissionsToUser(userDetails, userPermission, true);
     }
 
+    @Override
+    public List<PermissionType> getProjectPermissionForUser(long projectId) {
+        Map<Long, Set<Permission>> permissions = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getPermissionMap();
+        if (!permissions.isEmpty()) {
+            return permissions.get(projectId).stream()
+                    .map(Permission::getPermissionType)
+                    .toList();
+        }
+        return null;
+    }
+
     private void addPermissionsToUser(UserDetails userDetails, List<UserPermissionProjection> userPermissionList, boolean updatePermissions) {
         if (userPermissionList.isEmpty()) {
             return;

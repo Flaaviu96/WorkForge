@@ -5,7 +5,8 @@ import java.util.List;
 
 @Builder
 public record ProjectDTO(
-        long id,
+        String id,
+        String projectKey,
         String projectName,
         String projectDescription,
         List<TaskDTO> tasks,

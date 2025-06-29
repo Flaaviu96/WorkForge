@@ -26,11 +26,12 @@ public interface ProjectMapper {
     @Mapping(target = "tasks", ignore = true)
     ProjectDTO toDTOWithoutTasks(Project project);
 
-    @Mapping(target = "tasks", source = "tasks")
-    Project toProjectWithTasks(ProjectDTO projectDTO);
 
-    @Mapping(target = "tasks", ignore = true)
-    Project toProjectWithoutTasks(ProjectDTO projectDTO);
+//    @Mapping(target = "tasks", source = "tasks")
+//    Project toProjectWithTasks(ProjectDTO projectDTO);
+//
+//    @Mapping(target = "tasks", ignore = true)
+//    Project toProjectWithoutTasks(ProjectDTO projectDTO);
 
 
     @IterableMapping(qualifiedByName = "toDTOWithoutTasks")

@@ -27,11 +27,9 @@ public class ProjectController {
 
     @PermissionCheck(permissionType = PermissionType.READ)
     @GetMapping("/projects/{projectId}/tasks")
-    public ResponseEntity<ProjectDTO> getProjectWithTasks(@PathVariable long projectId) {
-        ProjectDTO projectDTO = projectReadService.getTasksWithoutCommentsByProjectId(projectId);
-        return ResponseEntity.ok(projectDTO);
+    public ResponseEntity<List<TaskDTO>> getTasksWithSummaries(@PathVariable long projectId) {
+        return ResponseEntity.ok(projectReadService.getTasksWithSummaries(projectId));
     }
-
 
     @GetMapping("/projects")
     public ResponseEntity<List<ProjectDTO>> getProjectsWithTasks() {
@@ -39,6 +37,10 @@ public class ProjectController {
         return ResponseEntity.ok(projectReadService.getProjectsWithoutTasks(new ArrayList<Long>()));
     }
 
+    @GetMapping("/projects/{projectKey}")
+    public ResponseEntity<String> getProjectId(@PathVariable String projectKey) {
+        return ResponseEntity.ok(projectReadService.getProjectIdBasedOnProjectKey(projectKey));
+    }
 
     @PostMapping("/projects")
     public ResponseEntity<ProjectDTO> saveProject(@RequestBody CreateProjectDTO createProjectDTO) {

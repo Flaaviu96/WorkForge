@@ -1,6 +1,7 @@
 package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.DTO.ProjectDTO;
+import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Model.Project;
 
 import java.util.List;
@@ -15,7 +16,16 @@ public interface ProjectReadService {
      * @param projectId the ID of the project
      * @return a list of tasks without comments
      */
-    ProjectDTO getTasksWithoutCommentsByProjectId(long projectId);
+    List<TaskDTO> getTasksWithoutCommentsByProjectId(long projectId);
+
+
+    /**
+     * Retrieve all tasks for the specified project with the metadata (e.g assginee,
+     *
+     * @param projectId
+     * @return
+     */
+    List<TaskDTO> getTasksWithSummaries(long projectId);
 
     /**
      * Retrieves the projects accessible to the current user, excluding their associated tasks.
@@ -24,4 +34,11 @@ public interface ProjectReadService {
      * @return a list of projects without their tasks
      */
     List<ProjectDTO> getProjectsWithoutTasks(List<Long> projectsIds);
+
+
+    /**
+     *
+     *
+     */
+    String getProjectIdBasedOnProjectKey(String projectKey);
 }

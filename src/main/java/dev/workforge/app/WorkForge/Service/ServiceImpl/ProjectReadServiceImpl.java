@@ -1,11 +1,13 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.ProjectDTO;
+import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.Exceptions.ProjectException;
 import dev.workforge.app.WorkForge.Mapper.ProjectMapper;
+import dev.workforge.app.WorkForge.Mapper.TaskMapper;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Model.Project;
-import dev.workforge.app.WorkForge.Projections.ProjectProjection;
+import dev.workforge.app.WorkForge.Projections.TaskProjection;
 import dev.workforge.app.WorkForge.Repository.ProjectRepository;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.ProjectReadService;
@@ -21,17 +23,31 @@ public class ProjectReadServiceImpl implements ProjectReadService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
+    private final TaskMapper taskMapper;
 
-    public ProjectReadServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper) {
+    public ProjectReadServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, TaskMapper taskMapper) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
+        this.taskMapper = taskMapper;
     }
 
     @Override
-    public ProjectDTO getTasksWithoutCommentsByProjectId(long projectId) {
-        ProjectProjection project = projectRepository.findTasksWithCommentsByProjectId(projectId)
+    public List<TaskDTO> getTasksWithoutCommentsByProjectId(long projectId) {
+        List<TaskProjection> taskProjections = projectRepository.findTaskSummariesByProjectId(projectId)
                 .orElseThrow(() -> new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND));
-        return projectMapper.toDTOWithTasks(project);
+        return taskMapper.taskProjectionToDTO(taskProjections);
+    }
+
+    @Override
+    public List<TaskDTO> getTasksWithSummaries(long projectId) {
+        List<TaskProjection> taskProjections = projectRepository.findTaskSummariesByProjectId(projectId)
+                .orElseThrow(() -> new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND));
+
+        if (taskProjections.isEmpty()) {
+            throw new ProjectException("No tasks found for project", HttpStatus.NOT_FOUND);
+        }
+
+        return taskMapper.taskProjectionToDTO(taskProjections);
     }
 
     @Override
@@ -51,5 +67,15 @@ public class ProjectReadServiceImpl implements ProjectReadService {
             return projectMapper.toProjectsDTOWithoutTasks(projectList.stream().toList());
         }
         throw new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    @Override
+    public String getProjectIdBasedOnProjectKey(String projectKey) {
+        if (projectKey != null && !projectKey.isBlank() && !projectKey.isEmpty()) {
+            Project project = projectRepository.findProjectByProjectKey(projectKey)
+                    .orElseThrow(()-> new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND));
+            return String.valueOf(project.getId());
+        }
+        return "";
     }
 }

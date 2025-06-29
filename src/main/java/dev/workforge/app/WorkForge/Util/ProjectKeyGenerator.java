@@ -12,8 +12,8 @@ public class ProjectKeyGenerator {
                     key.append(word.charAt(0));
                 }
             }
-            return key.toString();
+            return key.toString().toUpperCase();
         }
-        return name.substring(0, 2);
+        return name.substring(0, 3).toUpperCase();
     }
 }
