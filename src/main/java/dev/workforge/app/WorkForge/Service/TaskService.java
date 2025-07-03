@@ -45,9 +45,8 @@ public interface TaskService {
      *
      * @param commentDTO which represents the updated comment
      * @param taskId the ID of the task where to store the new comment
-     * @param projectId the ID of the project to which the task belongs
      */
-    void updateComment(CommentDTO commentDTO, long taskId, long projectId);
+    CommentDTO updateComment(CommentDTO commentDTO, long taskId);
 
 
     /**
@@ -72,7 +71,6 @@ public interface TaskService {
      *  @throws IOException if the attachment file cannot be read
      */
     InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException;
-
 
     void updateTaskState(long workflowId, long taskId, StateDTO stateFromDTO, StateDTO stateToDTO);
 }

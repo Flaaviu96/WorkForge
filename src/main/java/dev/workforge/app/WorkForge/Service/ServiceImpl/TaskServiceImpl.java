@@ -73,7 +73,7 @@ public class TaskServiceImpl implements TaskService {
     public CommentDTO saveNewComment(CommentDTO commentDTO, long taskId, long projectId) {
         DTOValidator.validate(commentDTO);
         try {
-            Task task = fetchTaskAndCheck(taskId, projectId);
+            Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
             Set<Comment> comments = task.getComments();
 
             Comment comment = new Comment();
@@ -95,19 +95,23 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void updateComment(CommentDTO commentDTO, long taskId, long projectId) {
+    public CommentDTO updateComment(CommentDTO commentDTO, long taskId) {
         DTOValidator.validate(commentDTO);
-        Task task = fetchTaskAndCheck(taskId, projectId);
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
         Set<Comment> comments = task.getComments();
 
-        if (comments != null && !comments.isEmpty()) {
-            Optional<Comment> optionalComment = comments.stream().filter( streamComment -> streamComment.getId() == commentDTO.id()).findFirst();
-            if (optionalComment.isPresent()) {
-                Comment comment = optionalComment.get();
-                comment.setContent(commentDTO.content());
-                taskRepository.save(task);
-            }
+        if (comments == null || comments.isEmpty()) {
+            throw new CommentException("No comments found for the task", HttpStatus.NOT_FOUND);
         }
+        Comment comment = comments.stream()
+                .filter(c -> c.getId() == commentDTO.id())
+                .findFirst()
+                .orElseThrow(() -> new CommentException("Comment not found", HttpStatus.NOT_FOUND));
+
+        comment.setContent(commentDTO.content());
+        taskRepository.save(task);
+
+        return CommentMapper.INSTANCE.toCommentDTO(comment);
     }
 
     @Override

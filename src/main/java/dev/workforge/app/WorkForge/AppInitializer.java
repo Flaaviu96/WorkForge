@@ -98,15 +98,17 @@ public class AppInitializer implements CommandLineRunner {
         return workflow;
     }
 
-    private Task createTask(Project project, State state, String taskName, Comment comment) {
+    private Task createTask(Project project, State state, String taskName, List<Comment> comments) {
         Task task = new Task();
         task.setTaskName("Test");
         task.setTaskName(taskName);
         task.setProject(project);
         task.setState(state);
-        if (comment != null) {
-            task.getComments().add(comment);
-            comment.setTask(task);
+        if (comments != null) {
+            for (Comment comment : comments) {
+                task.getComments().add(comment);
+                comment.setTask(task);
+            }
         }
         return task;
     }
@@ -127,7 +129,8 @@ public class AppInitializer implements CommandLineRunner {
                                         .build();
         workflow.addProject(project);
         Comment comment = createComment("This is a test for the frontend", "dicas", 1);
-        Task task = createTask(project, state, "test1",comment);
+        Comment comment1 = createComment("This is another test", "dicas", 1);
+        Task task = createTask(project, state, "test1", List.of(comment, comment1));
         TaskMetadata taskMetadata = new TaskMetadata();
         taskMetadata.setDescription("This is a dummy description for the task");
         taskMetadata.setAssignedTo("Dicas");
@@ -172,6 +175,7 @@ public class AppInitializer implements CommandLineRunner {
         userPermission.setProject(project);
         userPermission.setUser(appUser.get());
         userPermission.addPermission(readPermission);
+        userPermission.addPermission(writePermission);
 
         userPermissionRepository.saveAndFlush(userPermission);
     }
