@@ -22,6 +22,11 @@ public class CommentServiceImpl implements CommentService {
         return null;
     }
 
+    @Override
+    public void flushComment() {
+        commentRepository.flush();
+    }
+
     private boolean hasRequiredFields(Comment comment) {
         return comment.getAuthor() != null && !comment.getAuthor().isEmpty()
                 && comment.getContent() != null && !comment.getContent().isEmpty();

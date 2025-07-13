@@ -2,7 +2,10 @@ package dev.workforge.app.WorkForge.Model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -39,6 +42,14 @@ public class Task {
 
     @Version
     private Integer version;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Date createdDate;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private Date modifiedDate;
 
     public long getId() {
         return id;

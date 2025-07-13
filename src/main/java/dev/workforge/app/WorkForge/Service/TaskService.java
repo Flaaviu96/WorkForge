@@ -1,13 +1,11 @@
 package dev.workforge.app.WorkForge.Service;
 
-import dev.workforge.app.WorkForge.DTO.AttachmentDTO;
-import dev.workforge.app.WorkForge.DTO.CommentDTO;
-import dev.workforge.app.WorkForge.DTO.StateDTO;
-import dev.workforge.app.WorkForge.DTO.TaskDTO;
+import dev.workforge.app.WorkForge.DTO.*;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 public interface TaskService {
 
@@ -56,7 +54,6 @@ public interface TaskService {
      * @param projectId the ID of the project to which the task belongs
      * @param taskId the ID of the task where to store the new attachment
      * @return the persisted attachment
-     * @throws IOException
      */
     AttachmentDTO saveNewAttachment(MultipartFile file, long projectId, long taskId) throws IOException;
 
@@ -71,6 +68,8 @@ public interface TaskService {
      *  @throws IOException if the attachment file cannot be read
      */
     InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException;
+
+    TaskPatchDTO updateTask(long taskId, TaskPatchDTO taskPatchDTO);
 
     void updateTaskState(long workflowId, long taskId, StateDTO stateFromDTO, StateDTO stateToDTO);
 }

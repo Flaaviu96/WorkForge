@@ -66,6 +66,10 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Override
     public WorkflowDTO getWorkflowByProjectId(int projectId) {
+        if (!workflowFactory.hasWorkflow(projectId)) {
+            Workflow workflow = workflowRepository.findWorkflowByProjectId(projectId);
+            workflowFactory.addWorkflow(workflow);
+        }
         Map<State, List<State>> stateDTOListMap = workflowFactory.getWorkflowForSpecificProject(projectId);
         if (stateDTOListMap == null) {
             throw new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND);

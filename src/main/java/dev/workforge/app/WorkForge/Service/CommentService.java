@@ -4,4 +4,5 @@ import dev.workforge.app.WorkForge.Model.Comment;
 
 public interface CommentService {
     Comment saveNewComment(Comment comment);
+    void flushComment();
 }

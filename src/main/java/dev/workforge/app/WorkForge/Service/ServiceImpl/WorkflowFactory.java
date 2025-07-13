@@ -106,6 +106,10 @@ public class WorkflowFactory {
         buildStateTransitionGroup(workflow);
     }
 
+    public boolean hasWorkflow(long projectId) {
+        return stateTransitionMap.containsKey(projectId);
+    }
+
     public State getStateToByName(long workflowId, String stateName) {
         List<StateTransitionGroup> groups = stateTransitionMap.get(workflowId);
         if (groups == null) {

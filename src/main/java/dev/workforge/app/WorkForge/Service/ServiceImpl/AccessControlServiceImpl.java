@@ -104,7 +104,8 @@ public class AccessControlServiceImpl implements AccessControlService {
     private boolean hasPermissionsChanged(String sessionId) {
         long lastPermissionsUpdateFromRedis = userSessionService.getPermissionFromRedis(String.valueOf(retrieveSecurityUser().getId()));
         long lastPermissionsUpdateFromContext = retrieveSecurityUser().getLastPermissionsUpdate();
-        return lastPermissionsUpdateFromRedis > lastPermissionsUpdateFromContext;
+        return lastPermissionsUpdateFromRedis > lastPermissionsUpdateFromContext &&
+                (lastPermissionsUpdateFromRedis - lastPermissionsUpdateFromContext) >= 30_000;
     }
 
     private SecurityUser retrieveSecurityUser() {

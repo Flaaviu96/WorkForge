@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -84,6 +85,7 @@ public class TaskServiceImpl implements TaskService {
             comments.add(comment);
 
             Comment savedComment = commentService.saveNewComment(comment);
+            commentService.flushComment();
             if (savedComment == null) {
                 throw new IllegalStateException("Failed to persist comment.");
             }
@@ -148,6 +150,23 @@ public class TaskServiceImpl implements TaskService {
         }
 
         throw new AttachmentException(ErrorMessages.ATTACHMENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    @Override
+    public TaskPatchDTO updateTask(long taskId, TaskPatchDTO taskPatchDTO) {
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
+        if (taskPatchDTO.taskTimeTrackingDTO() != null) {
+            task.getTaskTimeTracking().setLoggedHours(taskPatchDTO.taskTimeTrackingDTO().loggedHours());
+        }
+        if (taskPatchDTO.taskMetadataDTO() != null) {
+            task.getTaskMetadata().setDescription(taskPatchDTO.taskMetadataDTO().description());
+            task.getTaskMetadata().setAssignedTo(taskPatchDTO.taskMetadataDTO().assignedTo());
+        }
+        if (taskPatchDTO.taskName() != null) {
+            task.setTaskName(taskPatchDTO.taskName());
+        }
+        task = taskRepository.saveAndFlush(task);
+        return taskMapper.toTaskPathDTO(task);
     }
 
     @Override

@@ -1,8 +1,6 @@
 package dev.workforge.app.WorkForge.Controllers;
 
-import dev.workforge.app.WorkForge.DTO.AttachmentDTO;
-import dev.workforge.app.WorkForge.DTO.CommentDTO;
-import dev.workforge.app.WorkForge.DTO.TaskDTO;
+import dev.workforge.app.WorkForge.DTO.*;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.TaskService;
@@ -30,7 +28,7 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getTaskByIdAndProjectId(taskId, projectId));
     }
 
-    @PatchMapping
+    @PutMapping
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
     public ResponseEntity<TaskDTO> updateTask(
             @PathVariable long projectId,
@@ -38,6 +36,16 @@ public class TaskController {
     ) {
         TaskDTO taskDTOUpdated = taskService.updateTaskWithoutCommentsAndAttachments(taskDTO, projectId);
         return ResponseEntity.ok(taskDTOUpdated);
+    }
+
+    @PatchMapping("{taskId}/metadata")
+    @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
+    public ResponseEntity<TaskPatchDTO> updateTaskMetadata(
+            @PathVariable long projectId,
+            @PathVariable long taskId,
+            @RequestBody TaskPatchDTO taskPatchDTO
+    ) {
+        return ResponseEntity.ok(taskService.updateTask(taskId, taskPatchDTO));
     }
 
     @PatchMapping("/{taskId}/comments")

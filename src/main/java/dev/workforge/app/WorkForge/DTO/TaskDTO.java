@@ -2,6 +2,8 @@ package dev.workforge.app.WorkForge.DTO;
 
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import lombok.Builder;
+
+import java.util.Date;
 import java.util.List;
 
 @Builder
@@ -12,5 +14,7 @@ public record TaskDTO(
         String state,
         List<CommentDTO> commentDTOS,
         TaskMetadataDTO taskMetadataDTO,
-        TaskTimeTrackingDTO taskTimeTrackingDTO
+        TaskTimeTrackingDTO taskTimeTrackingDTO,
+        Date createdDate,
+        Date modifiedDate
 ) {}
