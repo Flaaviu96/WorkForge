@@ -4,6 +4,7 @@ import dev.workforge.app.WorkForge.Model.State;
 import dev.workforge.app.WorkForge.Model.StateTransition;
 import dev.workforge.app.WorkForge.Model.Workflow;
 import dev.workforge.app.WorkForge.Trigger.AbstractTrigger;
+import dev.workforge.app.WorkForge.Trigger.TriggerSendEmail;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class WorkflowFactory {
+    // The long represents the projectId
     private final Map<Long, List<StateTransitionGroup>> stateTransitionMap = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final long expirationTimeMillis = 30 * 60 * 1000;
@@ -82,12 +84,12 @@ public class WorkflowFactory {
         }
     }
 
-    public Map<State, AbstractTrigger> getStatesTo(long id, State stateFrom) {
+    public Map<State, AbstractTrigger> getStatesTo(long id, String stateFrom) {
         List<StateTransitionGroup> group = stateTransitionMap.get(id);
         if (group == null || group.isEmpty()) return Collections.emptyMap();
 
         return group.stream()
-                .filter(stateTransitionGroup -> stateTransitionGroup.getFromState().getName().equals(stateFrom.getName()))
+                .filter(stateTransitionGroup -> stateTransitionGroup.getFromState().getName().equals(stateFrom))
                 .findFirst()
                 .map(StateTransitionGroup::getToStates)
                 .orElse(Collections.emptyMap());
@@ -140,12 +142,13 @@ public class WorkflowFactory {
     }
 
     private void buildStateTransitionGroup(Workflow workflow) {
+        AbstractTrigger dummyTrigger = new TriggerSendEmail();
         Map<State, Map<State, AbstractTrigger>> stateListMap = workflow.getStateTransitions().stream()
                 .collect(Collectors.groupingBy(
                         StateTransition::getFromState,
                         Collectors.toMap(
                                 StateTransition::getToState,
-                                StateTransition::getTrigger
+                                s -> dummyTrigger
                         )
                 ));
         List<StateTransitionGroup> stateTransitionGroupList = new ArrayList<>();

@@ -13,6 +13,7 @@ public record TaskDTO(
         String taskName,
         String state,
         List<CommentDTO> commentDTOS,
+        List<AttachmentDTO> attachmentDTOS,
         TaskMetadataDTO taskMetadataDTO,
         TaskTimeTrackingDTO taskTimeTrackingDTO,
         Date createdDate,

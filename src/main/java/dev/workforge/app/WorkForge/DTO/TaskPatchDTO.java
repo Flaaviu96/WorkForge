@@ -7,8 +7,10 @@ import java.util.Date;
 @Builder
 public record TaskPatchDTO(
         String taskName,
-        String state,
+        String fromState,
+        String toState,
         Date modifiedDate,
         TaskMetadataDTO taskMetadataDTO,
-        TaskTimeTrackingDTO taskTimeTrackingDTO
+        TaskTimeTrackingDTO taskTimeTrackingDTO,
+        String userUUID
 ) {}

@@ -13,14 +13,17 @@ public interface WorkflowRepository extends JpaRepository<Workflow, Long> {
             "JOIN FETCH w.stateTransitions st " +
             "JOIN FETCH st.fromState " +
             "JOIN FETCH st.toState " +
-            "WHERE w.id = : workflowId "
+            "WHERE w.id = :workflowId "
     )
     Workflow findWorkflowWithStateTransitions(long workflowId);
 
     @Query(
             "SELECT w FROM Workflow w " +
-            "JOIN FETCH s.projects p " +
-            "WHERE p.id = : projectId "
+            "JOIN FETCH w.projects p " +
+            "JOIN FETCH w.stateTransitions s " +
+            "JOIN FETCH s.fromState sf " +
+            "JOIN FETCH s.toState st " +
+            "WHERE p.id = :projectId "
     )
     Workflow findWorkflowByProjectId(long projectId);
 

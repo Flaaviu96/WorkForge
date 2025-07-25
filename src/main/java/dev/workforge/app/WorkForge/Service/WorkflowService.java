@@ -13,7 +13,7 @@ public interface WorkflowService {
      */
     Workflow getWorkflowById(long id);
 
-    boolean isTransitionValid(long id, State stateFrom, State stateTo);
+    boolean isTransitionValid(long id, String stateFrom, String stateTo);
 
     State getStateToByName(long workflowId, String stateName);
 

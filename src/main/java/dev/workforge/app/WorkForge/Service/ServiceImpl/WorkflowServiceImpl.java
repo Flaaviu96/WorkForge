@@ -38,17 +38,16 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     @Override
-    public boolean isTransitionValid(long id, State stateFrom, State stateTo) {
-        Workflow workflow = workflowRepository.findWorkflowWithStateTransitions(id);
-        if (workflow == null) throw new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND);
-        Map<State, AbstractTrigger> states = workflowFactory.getStatesTo(id, stateFrom);
-        if (states == null) {
+    public boolean isTransitionValid(long id, String stateFrom, String stateTo) {
+        Map<State, AbstractTrigger> states = null;
+        if (!workflowFactory.hasWorkflow(id)) {
+            Workflow workflow = workflowRepository.findWorkflowByProjectId(id);
+            if (workflow == null) throw new WorkflowException(ErrorMessages.WORKFLOW_NOT_FOUND, HttpStatus.NOT_FOUND);
             workflowFactory.addWorkflow(workflow);
-            states = workflowFactory.getStatesTo(id, stateFrom);
-            return states.entrySet().stream()
-                    .anyMatch(stateAbstractTriggerEntry -> stateAbstractTriggerEntry.getKey().getName().equals(stateTo.getName()));
         }
-        return false;
+        states = workflowFactory.getStatesTo(id, stateFrom);
+        return states.entrySet().stream()
+                .anyMatch(stateAbstractTriggerEntry -> stateAbstractTriggerEntry.getKey().getName().equals(stateTo));
     }
 
     @Override

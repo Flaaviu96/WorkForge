@@ -161,7 +161,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         userPermission.setUser(appUser);
         userPermission.setProject(project);
         userPermission.setPermissions(new HashSet<>(permissions));
-
+        userSessionService.updatePermissionSession(String.valueOf(appUser.getId()));
         userPermissionRepository.save(userPermission);
     }
 

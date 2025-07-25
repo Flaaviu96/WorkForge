@@ -2,7 +2,6 @@ package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.UserViewDTO;
 import dev.workforge.app.WorkForge.Exceptions.UserException;
-import dev.workforge.app.WorkForge.Mapper.TaskMapper;
 import dev.workforge.app.WorkForge.Mapper.UserMapper;
 import dev.workforge.app.WorkForge.Model.AppUser;
 import dev.workforge.app.WorkForge.Repository.UserRepository;

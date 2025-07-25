@@ -1,6 +1,7 @@
 package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.DTO.*;
+import dev.workforge.app.WorkForge.Model.Attachment;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,13 +64,12 @@ public interface TaskService {
      *
      * @param projectId the ID of the project to which the task belongs
      * @param taskId the ID of the task from where we get the path for the attachment
-     * @param attachmentName the name of the attachment entity
      * @return the stream of the attachment
      *  @throws IOException if the attachment file cannot be read
      */
-    InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException;
+    Attachment downloadAttachment(long projectId, long taskId, long attachmentId) throws IOException;
 
-    TaskPatchDTO updateTask(long taskId, TaskPatchDTO taskPatchDTO);
+    TaskPatchDTO updateTask(long projectId, long taskId, TaskPatchDTO taskPatchDTO);
 
-    void updateTaskState(long workflowId, long taskId, StateDTO stateFromDTO, StateDTO stateToDTO);
+    void deleteAttachment(long taskId, String attachment);
 }

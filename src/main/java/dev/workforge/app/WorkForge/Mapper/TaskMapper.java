@@ -18,6 +18,7 @@ public interface TaskMapper {
 
     @Mapping(target = "state", source = "state.name")
     @Mapping(target = "commentDTOS", source = "comments")
+    @Mapping(target = "attachmentDTOS", source = "attachments")
     @Mapping(target = "taskMetadataDTO", source = "taskMetadata")
     @Mapping(target = "permissionTypes", ignore = true)
     TaskDTO toDTO(Task task, @Context List<PermissionType> permissionTypes);
@@ -53,7 +54,7 @@ public interface TaskMapper {
 
     TaskMetadataDTO toTaskMetaDTO(TaskMetadata taskMetadata);
 
-    @Mapping(target = "state", source = "state.name")
+    @Mapping(target = "fromState", source = "state.name")
     @Mapping(target = "taskMetadataDTO", source = "taskMetadata")
     @Mapping(target = "taskTimeTrackingDTO", source = "taskTimeTracking")
     TaskPatchDTO toTaskPathDTO(Task task);

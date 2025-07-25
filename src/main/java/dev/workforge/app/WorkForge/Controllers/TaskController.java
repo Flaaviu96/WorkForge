@@ -1,14 +1,23 @@
 package dev.workforge.app.WorkForge.Controllers;
 
 import dev.workforge.app.WorkForge.DTO.*;
+import dev.workforge.app.WorkForge.Model.Attachment;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.TaskService;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/projects/{projectId}/tasks")
@@ -45,7 +54,7 @@ public class TaskController {
             @PathVariable long taskId,
             @RequestBody TaskPatchDTO taskPatchDTO
     ) {
-        return ResponseEntity.ok(taskService.updateTask(taskId, taskPatchDTO));
+        return ResponseEntity.ok(taskService.updateTask(projectId, taskId, taskPatchDTO));
     }
 
     @PatchMapping("/{taskId}/comments")
@@ -57,7 +66,6 @@ public class TaskController {
     ) {
         return ResponseEntity.ok(taskService.updateComment(commentDTO, taskId));
     }
-
 
     @PostMapping("/{taskId}/comments")
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
@@ -76,9 +84,21 @@ public class TaskController {
     public ResponseEntity<Resource> downloadAttachment(
             @PathVariable long projectId,
             @PathVariable long taskId,
-            @PathVariable String attachmentId) throws IOException {
-
+            @PathVariable long attachmentId) throws IOException {
+        Attachment attachment = taskService.downloadAttachment(projectId, taskId, attachmentId);
         return ResponseEntity.ok()
-                .body(taskService.downloadAttachment(projectId, taskId, attachmentId));
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getFileName() + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(Paths.get(attachment.getPath())))
+                .body(new InputStreamResource(new FileInputStream(new File(attachment.getPath()))));
+    }
+
+    @DeleteMapping("/{taskId}/attachments/{attachmentId}")
+    @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
+    public ResponseEntity<String> deleteAttachment(
+            @PathVariable long projectId,
+            @PathVariable long taskId,
+            @PathVariable String attachmentId) {
+        taskService.deleteAttachment(taskId, attachmentId);
+        return ResponseEntity.ok("Task deleted successfully.");
     }
 }

@@ -50,6 +50,7 @@ public class AppInitializer implements CommandLineRunner {
 
         createAndSaveProject(workflow, states.get(0));
         createAndSaveUser("dicas","dicas");
+        createAndSaveUser("test","test");
         createAndSaveUserPermissions("dicas",1L);
     }
 

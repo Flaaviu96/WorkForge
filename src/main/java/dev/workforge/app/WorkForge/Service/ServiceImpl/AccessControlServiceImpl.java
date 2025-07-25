@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,7 +107,7 @@ public class AccessControlServiceImpl implements AccessControlService {
         long lastPermissionsUpdateFromRedis = userSessionService.getPermissionFromRedis(String.valueOf(retrieveSecurityUser().getId()));
         long lastPermissionsUpdateFromContext = retrieveSecurityUser().getLastPermissionsUpdate();
         return lastPermissionsUpdateFromRedis > lastPermissionsUpdateFromContext &&
-                (lastPermissionsUpdateFromRedis - lastPermissionsUpdateFromContext) >= 30_000;
+                (lastPermissionsUpdateFromRedis - lastPermissionsUpdateFromContext) >= 2_00;
     }
 
     private SecurityUser retrieveSecurityUser() {

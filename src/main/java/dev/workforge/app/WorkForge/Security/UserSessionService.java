@@ -42,7 +42,7 @@ public class UserSessionService {
     }
 
     public void updatePermissionSession(String key) {
-        if (getObjectFromRedis(key, String.class) != null) {
+        if (getObjectFromRedis(PERMISSION_UPDATED_PREFIX + key, Long.class) != null) {
             redisTemplate.opsForValue().set(PERMISSION_UPDATED_PREFIX + key, System.currentTimeMillis(), 30, TimeUnit.MINUTES);
         }
     }

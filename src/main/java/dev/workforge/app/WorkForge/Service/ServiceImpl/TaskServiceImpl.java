@@ -5,27 +5,19 @@ import dev.workforge.app.WorkForge.Enum.GlobalEnum;
 import dev.workforge.app.WorkForge.Exceptions.*;
 import dev.workforge.app.WorkForge.Mapper.AttachmentMapper;
 import dev.workforge.app.WorkForge.Mapper.CommentMapper;
-import dev.workforge.app.WorkForge.Mapper.StateMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
 import dev.workforge.app.WorkForge.Model.*;
 import dev.workforge.app.WorkForge.Repository.TaskRepository;
-import dev.workforge.app.WorkForge.Service.CommentService;
-import dev.workforge.app.WorkForge.Service.SecurityUserService;
-import dev.workforge.app.WorkForge.Service.TaskService;
-import dev.workforge.app.WorkForge.Service.WorkflowService;
+import dev.workforge.app.WorkForge.Service.*;
 import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -36,14 +28,16 @@ public class TaskServiceImpl implements TaskService {
     private final WorkflowService workflowService;
     private final TaskMapper taskMapper;
     private final SecurityUserService securityUserService;
+    private final UserService userService;
 
-    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService, WorkflowService workflowService, TaskMapper taskMapper, SecurityUserService securityUserService) {
+    public TaskServiceImpl(TaskRepository taskRepository, CommentService commentService, FileServiceImpl fileService, WorkflowService workflowService, TaskMapper taskMapper, SecurityUserService securityUserService, UserService userService) {
         this.taskRepository = taskRepository;
         this.commentService = commentService;
         this.fileService = fileService;
         this.workflowService = workflowService;
         this.taskMapper = taskMapper;
         this.securityUserService = securityUserService;
+        this.userService = userService;
     }
 
     @Override
@@ -72,7 +66,6 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public CommentDTO saveNewComment(CommentDTO commentDTO, long taskId, long projectId) {
-        DTOValidator.validate(commentDTO);
         try {
             Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
             Set<Comment> comments = task.getComments();
@@ -119,12 +112,17 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public AttachmentDTO saveNewAttachment(MultipartFile file, long projectId, long taskId) throws IOException {
         Task task = taskRepository.findTaskByIdAndProjectId(taskId, projectId);
-        Path path = fileService.saveFile(file, task.getId(), task.getProject().getProjectName());
+        boolean duplicate = task.getAttachments().stream()
+                .anyMatch(attachment -> attachment.getFileName().equals(file.getOriginalFilename()));
+        if (duplicate) {
+            throw new AttachmentException(ErrorMessages.ATTACHMENT_DUPLICATE, HttpStatus.BAD_REQUEST);
+        }
 
+        Path path = fileService.saveFile(file, task.getId(), task.getProject().getProjectName());
         Attachment attachment = new Attachment();
         attachment.setTask(task);
         attachment.setPath(path.toString());
-        attachment.setFileName(file.getName());
+        attachment.setFileName(file.getOriginalFilename());
         attachment.setProjectId(task.getProject().getId());
         attachment.setSize(file.getSize());
 
@@ -138,53 +136,75 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public InputStreamResource downloadAttachment(long projectId, long taskId, String attachmentName) throws IOException {
+    public Attachment downloadAttachment(long projectId, long taskId, long attachmentId) throws IOException {
         Task task = taskRepository.findTaskWithAttachments(taskId);
         if (task == null) {
             throw new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
-        Optional<Attachment> optionalAttachment = task.getAttachments().stream().filter(attachment -> attachment.getFileName().equals(attachmentName)).findFirst();
+        Optional<Attachment> optionalAttachment = task.getAttachments().stream().filter(attachment -> attachment.getId() == attachmentId).findFirst();
         if (optionalAttachment.isPresent()) {
-            return new InputStreamResource(getInputStream(optionalAttachment.get().getPath()));
+            return optionalAttachment.get();
         }
-
         throw new AttachmentException(ErrorMessages.ATTACHMENT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
     @Override
-    public TaskPatchDTO updateTask(long taskId, TaskPatchDTO taskPatchDTO) {
+    public TaskPatchDTO updateTask(long projectId, long taskId, TaskPatchDTO taskPatchDTO) {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
         if (taskPatchDTO.taskTimeTrackingDTO() != null) {
             task.getTaskTimeTracking().setLoggedHours(taskPatchDTO.taskTimeTrackingDTO().loggedHours());
         }
         if (taskPatchDTO.taskMetadataDTO() != null) {
             task.getTaskMetadata().setDescription(taskPatchDTO.taskMetadataDTO().description());
-            task.getTaskMetadata().setAssignedTo(taskPatchDTO.taskMetadataDTO().assignedTo());
         }
         if (taskPatchDTO.taskName() != null) {
             task.setTaskName(taskPatchDTO.taskName());
+        }
+        if (taskPatchDTO.toState() != null) {
+            updateTaskState(projectId, taskId, taskPatchDTO.fromState(), taskPatchDTO.toState());
+        }
+
+        if (taskPatchDTO.userUUID() != null) {
+            AppUser appUser = userService.getUserByUUID(UUID.fromString(taskPatchDTO.userUUID()));
+            if (appUser == null) {
+                throw new UserException(ErrorMessages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+            }
+            task.getTaskMetadata().setAssignedTo(appUser.getUsername());
         }
         task = taskRepository.saveAndFlush(task);
         return taskMapper.toTaskPathDTO(task);
     }
 
     @Override
-    public void updateTaskState(long workflowId, long taskId, StateDTO stateFromDTO, StateDTO stateToDTO) {
+    public void deleteAttachment(long taskId, String attachment) {
+        Task task = taskRepository.findTaskWithAttachments(taskId);
+        if (task == null) {
+            throw new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        Iterator<Attachment> attachmentIterator = task.getAttachments().iterator();
+        while (attachmentIterator.hasNext()) {
+            Attachment att = attachmentIterator.next();
+            if (att.getFileName().equals(attachment)) {
+                attachmentIterator.remove();
+                att.setTask(null);
+                break;
+            }
+        }
+        taskRepository.save(task);
+    }
+
+
+    public void updateTaskState(long projectId, long taskId, String stateFromDTO, String stateToDTO) {
         DTOValidator.validate(stateFromDTO);
         DTOValidator.validate(stateToDTO);
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
-        boolean result = workflowService.isTransitionValid(
-                workflowId,
-                StateMapper.INSTANCE.fromDTO(stateFromDTO),
-                StateMapper.INSTANCE.fromDTO(stateToDTO)
-        );
+        boolean result = workflowService.isTransitionValid(projectId, stateFromDTO, stateToDTO);
 
         if (result) {
-            State state = workflowService.getStateToByName(workflowId, stateToDTO.name());
+            State state = workflowService.getStateToByName(projectId, stateToDTO);
             task.setState(state);
-            workflowService.triggerStateTransition(workflowId,stateFromDTO.name(), state);
-            taskRepository.save(task);
+            //workflowService.triggerStateTransition(workflowId,stateFromDTO, state);
             return;
         }
         throw new StateTransitionException(ErrorMessages.STATE_TRANSITION_NOT_VALID, HttpStatus.BAD_REQUEST);
@@ -227,9 +247,5 @@ public class TaskServiceImpl implements TaskService {
                 task.getTaskMetadata().setAssignedTo(metadataDTO.assignedTo());
             }
         }
-    }
-
-    public InputStream getInputStream(String filePath) throws IOException {
-        return new FileInputStream(new File(filePath));
     }
 }

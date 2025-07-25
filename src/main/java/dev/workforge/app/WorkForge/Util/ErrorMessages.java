@@ -5,6 +5,7 @@ public class ErrorMessages {
     public static final String INVALID_ID = "Invalid or incomplete data";
     public static final String TASK_MODIFIED_BY_ANOTHER_USER = "Task was modified by another user. Please refresh and try again.";
     public static final String ATTACHMENT_NOT_FOUND = "The attachment cannot be found";
+    public static final String ATTACHMENT_DUPLICATE = "The attachment already exists";
     public static final String STATE_TRANSITION_NOT_VALID = "The state transition is not valid";
     public static final String WORKFLOW_NOT_FOUND = "The workflow is not found in the database";
     public static final String USERS_NOT_FOUND = "Users not found";

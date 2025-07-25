@@ -13,6 +13,5 @@ public interface AttachmentMapper {
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "fileName", target = "fileName")
-    @Mapping(source = "fileType", target = "fileType")
     AttachmentDTO toDTO (Attachment attachment);
 }
