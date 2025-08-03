@@ -1,8 +1,6 @@
 package dev.workforge.app.WorkForge.Controllers;
 
-import dev.workforge.app.WorkForge.DTO.CreateProjectDTO;
-import dev.workforge.app.WorkForge.DTO.ProjectDTO;
-import dev.workforge.app.WorkForge.DTO.TaskDTO;
+import dev.workforge.app.WorkForge.DTO.*;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.ProjectReadService;
@@ -64,5 +62,11 @@ public class ProjectController {
     public ResponseEntity<Void> saveNewTask(@PathVariable(name = "projectId") long projectId, @RequestBody TaskDTO taskDTO) {
         projectService.saveNewTaskIntoProject(projectId, taskDTO);
         return null;
+    }
+
+    @PermissionCheck(permissionType = {PermissionType.READ})
+    @GetMapping("/projects/{projectId}/tasks/search")
+    public ResponseEntity<PageResultDTO<TaskSummaryDTO>> getTasksUsingFilter(@PathVariable long projectId, @ModelAttribute TaskFilter taskFilter) {
+        return ResponseEntity.ok(projectReadService.getTasksByFilter(taskFilter, projectId));
     }
 }

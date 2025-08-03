@@ -4,7 +4,7 @@ public interface TaskProjection {
     String getTaskName();
     String getStateName();
     String getAssignedTo();
-    double getRemainingHours();
-    long getTaskId();
+    Double getRemainingHours();
+    Long getTaskId();
 
 }

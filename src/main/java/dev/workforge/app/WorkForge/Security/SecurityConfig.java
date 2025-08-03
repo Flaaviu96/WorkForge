@@ -53,11 +53,11 @@ public class SecurityConfig {
             c.configurationSource(source);
              })
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
                 )
                 .securityContext(securityContextConfigurer ->
-                        securityContextConfigurer.requireExplicitSave(true)
+                        securityContextConfigurer.requireExplicitSave(false)
                                 .securityContextRepository(securityContextRepository())
                 )
                 .formLogin(AbstractHttpConfigurer::disable)

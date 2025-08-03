@@ -1,7 +1,6 @@
 package dev.workforge.app.WorkForge.Service;
 
-import dev.workforge.app.WorkForge.DTO.ProjectDTO;
-import dev.workforge.app.WorkForge.DTO.TaskDTO;
+import dev.workforge.app.WorkForge.DTO.*;
 import dev.workforge.app.WorkForge.Model.Project;
 
 import java.util.List;
@@ -41,4 +40,6 @@ public interface ProjectReadService {
      *
      */
     String getProjectIdBasedOnProjectKey(String projectKey);
+
+    PageResultDTO<TaskSummaryDTO> getTasksByFilter(TaskFilter taskFilter, long projectId);
 }

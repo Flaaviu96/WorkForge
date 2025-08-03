@@ -139,7 +139,29 @@ public class AppInitializer implements CommandLineRunner {
         task.setTaskMetadata(taskMetadata);
         TaskTimeTracking taskTimeTracking = new TaskTimeTracking();
         task.setTaskTimeTracking(taskTimeTracking);
-        project.setTasks(Set.of(task));
+
+        Task task1 = createTask(project, state, "te", List.of(comment, comment1));
+        Task task2 = createTask(project, state, "tes", List.of(comment, comment1));
+        Task task3 = createTask(project, state, "tesa", List.of(comment, comment1));
+        Task task4 = createTask(project, state, "task4", List.of(comment, comment1));
+        Task task5 = createTask(project, state, "task5", List.of(comment, comment1));
+        Task task6 = createTask(project, state, "task6", List.of(comment, comment1));
+        Task task7 = createTask(project, state, "task7", List.of(comment, comment1));
+        Task task8 = createTask(project, state, "task8", List.of(comment, comment1));
+        Task task9 = createTask(project, state, "task9", List.of(comment, comment1));
+        Task task10 = createTask(project, state, "task10", List.of(comment, comment1));
+        Task task11 = createTask(project, state, "task11", List.of(comment, comment1));
+        Task task12 = createTask(project, state, "task12", List.of(comment, comment1));
+        Task task13 = createTask(project, state, "task13", List.of(comment, comment1));
+        Task task14 = createTask(project, state, "task14", List.of(comment, comment1));
+        Task task15 = createTask(project, state, "task15", List.of(comment, comment1));
+        Task task16 = createTask(project, state, "task16", List.of(comment, comment1));
+
+        project.setTasks(Set.of(
+                task1, task2, task3, task4, task5, task6, task7, task8,
+                task9, task10, task11, task12, task13, task14, task15, task16
+        ));
+
         workflowRepository.saveAndFlush(workflow);
     }
 

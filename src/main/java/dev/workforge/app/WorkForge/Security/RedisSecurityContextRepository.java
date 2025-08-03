@@ -29,7 +29,6 @@ public class RedisSecurityContextRepository implements SecurityContextRepository
         if (securityUser == null) {
             return SecurityContextHolder.createEmptyContext();
         }
-
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 securityUser, null, securityUser.getAuthorities()
         );
@@ -40,12 +39,15 @@ public class RedisSecurityContextRepository implements SecurityContextRepository
 
     @Override
     public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
-        String sessionId = request.getSession().getId();
-        if (sessionId != null && context.getAuthentication() != null) {
-            Authentication authentication = context.getAuthentication();
-            if (authentication.getPrincipal() instanceof SecurityUser) {
-                securityUserService.storeUserInRedis(sessionId,(SecurityUser) authentication.getPrincipal());
-            }
+        if (context.getAuthentication() == null) {
+            return;
+        }
+
+        Authentication authentication = context.getAuthentication();
+
+        if (authentication.getPrincipal() instanceof SecurityUser securityUser) {
+            String sessionId = request.getSession(true).getId();
+            securityUserService.storeUserInRedis(sessionId, securityUser);
         }
     }
 

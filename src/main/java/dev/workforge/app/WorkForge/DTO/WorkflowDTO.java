@@ -7,5 +7,5 @@ import java.util.Map;
 @Builder
 public record WorkflowDTO (
         long projectId,
-        Map<StateDTO, List<StateDTO>> stateDTOListMap
+        Map<String, List<StateDTO>> stateDTOListMap
 ) {}

@@ -45,9 +45,8 @@ public class AuthenticationService {
      * Stores the authenticated user into Redis session.
      *
      * @param userDTO The DTO containing the username and the password.
-     * @param sessionId The ID which will be stored into the Redis
      */
-    public void login(UserDTO userDTO, String sessionId) {
+    public void login(UserDTO userDTO, HttpServletRequest request) {
         try {
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(userDTO.username(), userDTO.password());
@@ -55,7 +54,7 @@ public class AuthenticationService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
             securityUserService.loadUserPermissionsIntoUserDetails(securityUser);
-            userSessionService.storeUserInRedis(sessionId, securityUser);
+            userSessionService.storeUserOnLogin(request.getSession().getId(), securityUser);
         } catch (AuthenticationException e) {
             throw new AuthenticationCredentialsNotFoundException("Bad credentials");
         }

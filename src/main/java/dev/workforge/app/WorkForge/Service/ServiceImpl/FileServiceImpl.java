@@ -33,4 +33,16 @@ public class FileServiceImpl {
             }
         }
     }
+
+    public void deleteFile(String filePath) {
+        Path path = Paths.get(filePath);
+        try {
+            boolean deleted = Files.deleteIfExists(path);
+            if (!deleted) {
+                System.out.println("File not found: " + filePath);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file: " + filePath, e);
+        }
+    }
 }

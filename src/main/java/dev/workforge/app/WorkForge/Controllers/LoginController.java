@@ -30,7 +30,7 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody UserDTO userDTO, HttpServletRequest request) {
-        authenticationService.login(userDTO, request.getSession().getId());
+        authenticationService.login(userDTO, request);
         ResponseCookie cookie = ResponseCookie.from("SESSIONID", request.getSession().getId())
                 .httpOnly(true)
                 .secure(false)

@@ -1,7 +1,6 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
-import dev.workforge.app.WorkForge.DTO.ProjectDTO;
-import dev.workforge.app.WorkForge.DTO.TaskDTO;
+import dev.workforge.app.WorkForge.DTO.*;
 import dev.workforge.app.WorkForge.Exceptions.ProjectException;
 import dev.workforge.app.WorkForge.Mapper.ProjectMapper;
 import dev.workforge.app.WorkForge.Mapper.TaskMapper;
@@ -11,6 +10,7 @@ import dev.workforge.app.WorkForge.Projections.TaskProjection;
 import dev.workforge.app.WorkForge.Repository.ProjectRepository;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
 import dev.workforge.app.WorkForge.Service.ProjectReadService;
+import dev.workforge.app.WorkForge.Service.TaskService;
 import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,11 +24,13 @@ public class ProjectReadServiceImpl implements ProjectReadService {
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
     private final TaskMapper taskMapper;
+    private final TaskService taskService;
 
-    public ProjectReadServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, TaskMapper taskMapper) {
+    public ProjectReadServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, TaskMapper taskMapper, TaskService taskService, TaskService taskService1) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.taskMapper = taskMapper;
+        this.taskService = taskService1;
     }
 
     @Override
@@ -77,5 +79,10 @@ public class ProjectReadServiceImpl implements ProjectReadService {
             return String.valueOf(project.getId());
         }
         return "";
+    }
+
+    @Override
+    public PageResultDTO<TaskSummaryDTO> getTasksByFilter(TaskFilter taskFilter, long projectId) {
+        return taskService.getPaginatedTaskSummaries(taskFilter, projectId);
     }
 }

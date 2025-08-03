@@ -1,6 +1,9 @@
 package dev.workforge.app.WorkForge.Service;
 
 import dev.workforge.app.WorkForge.Model.PermissionType;
+import dev.workforge.app.WorkForge.Security.PermissionContext;
+import dev.workforge.app.WorkForge.Security.PermissionContextOperation;
+import dev.workforge.app.WorkForge.Security.SecurityUser;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
@@ -14,13 +17,15 @@ public interface SecurityUserService {
      */
     void loadUserPermissionsIntoUserDetails(UserDetails userDetails);
 
-    /**
-     * Extracts the IDs of projects that do not have a specific permission type (e.g., READ, WRITE).
-     *
-     * @return a list of project IDs.
-     */
-    List<Long> extractProjectIdsFromSecurityContext();
+    PermissionContext getPermissionContext();
 
+    PermissionContextOperation getPermissionContextOperation();
+
+    SecurityUser retrieveSecurityUser();
+
+    PermissionContext getPermissionContext(SecurityUser user);
+
+    PermissionContextOperation getPermissionContextOperation(SecurityUser user);
     /**
      * Refresh the user permissions with the new ones
      *

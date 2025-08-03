@@ -161,7 +161,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         userPermission.setUser(appUser);
         userPermission.setProject(project);
         userPermission.setPermissions(new HashSet<>(permissions));
-        userSessionService.updatePermissionSession(String.valueOf(appUser.getId()));
+        userSessionService.updatePermissionTimestampsFromRedis(String.valueOf(appUser.getId()));
         userPermissionRepository.save(userPermission);
     }
 
@@ -221,7 +221,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                 .toList();
         for (AppUser appUser : appUsersUpdated) {
             if (userSessionService.hasKey(appUser.getUsername())) {
-                userSessionService.updatePermissionSession(String.valueOf(appUser.getId()));
+                userSessionService.updatePermissionTimestampsFromRedis(String.valueOf(appUser.getId()));
             }
         }
     }

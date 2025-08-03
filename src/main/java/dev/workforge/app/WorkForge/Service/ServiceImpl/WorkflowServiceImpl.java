@@ -76,10 +76,10 @@ public class WorkflowServiceImpl implements WorkflowService {
         return new WorkflowDTO(projectId, transformWorkflowToDTO(stateDTOListMap));
     }
 
-    private Map<StateDTO, List<StateDTO>> transformWorkflowToDTO(Map<State, List<State>> stateDTOListMap) {
+    private Map<String, List<StateDTO>> transformWorkflowToDTO(Map<State, List<State>> stateDTOListMap) {
         return stateDTOListMap.entrySet().stream()
                 .collect(Collectors.toMap(
-                        entry -> stateMapper.toDTO(entry.getKey()),
+                        entry -> entry.getKey().getName(),
                         entry -> entry.getValue().stream()
                                 .map(stateMapper::toDTO)
                                 .collect(Collectors.toList())

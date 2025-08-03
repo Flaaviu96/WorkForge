@@ -9,11 +9,7 @@ import dev.workforge.app.WorkForge.Service.AccessControlService;
 import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,14 +30,15 @@ public class AccessControlServiceImpl implements AccessControlService {
             return false;
         }
 
-        SecurityUser securityUser = retrieveSecurityUser();
+        SecurityUser securityUser = securityUserService.retrieveSecurityUser();
 
         if (sessionId != null && hasPermissionsChanged(sessionId)) {
             securityUserService.refreshUserPermissionsForUserDetails(securityUser);
+            securityUserService.getPermissionContextOperation(securityUser).rebuildTimestamps();
             userSessionService.storeUserInRedis(sessionId, securityUser);
         }
 
-        Map<Long, Set<Permission>> permissions = securityUser.getPermissionMap();
+        Map<Long, Set<Permission>> permissions = securityUser.getPermissionContext().getPermissionMap();
 
         if (permissions.containsKey(projectId) && hasRequiredPermissions(permissionTypes, permissions, projectId)) {
             return true;
@@ -77,8 +74,8 @@ public class AccessControlServiceImpl implements AccessControlService {
 
     @Override
     public int[] getAvailableProjectsForCurrentUser() {
-        SecurityUser securityUser = retrieveSecurityUser();
-        Map<Long, Set<Permission>> permissions = securityUser.getPermissionMap();
+        SecurityUser securityUser = securityUserService.retrieveSecurityUser();
+        Map<Long, Set<Permission>> permissions = securityUserService.getPermissionContext().getPermissionMap();
         return permissions.keySet().stream()
                 .mapToInt(Long::intValue)
                 .toArray();
@@ -104,13 +101,9 @@ public class AccessControlServiceImpl implements AccessControlService {
      * @return true if the user's permissions have changed; false otherwise
      */
     private boolean hasPermissionsChanged(String sessionId) {
-        long lastPermissionsUpdateFromRedis = userSessionService.getPermissionFromRedis(String.valueOf(retrieveSecurityUser().getId()));
-        long lastPermissionsUpdateFromContext = retrieveSecurityUser().getLastPermissionsUpdate();
-        return lastPermissionsUpdateFromRedis > lastPermissionsUpdateFromContext &&
-                (lastPermissionsUpdateFromRedis - lastPermissionsUpdateFromContext) >= 2_00;
-    }
-
-    private SecurityUser retrieveSecurityUser() {
-        return (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SecurityUser securityUser = securityUserService.retrieveSecurityUser();
+        UserSessionService.UserPermission userPermissionTimestamps = userSessionService.getPermissionTimestampsFromRedis(String.valueOf(securityUser.getId()));
+        return userPermissionTimestamps.getUpdatedPermission() > userPermissionTimestamps.getBuildPermissionAt() &&
+                (userPermissionTimestamps.getUpdatedPermission() - userPermissionTimestamps.getBuildPermissionAt() >= 2_00);
     }
 }

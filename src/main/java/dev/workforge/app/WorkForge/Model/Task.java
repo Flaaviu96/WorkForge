@@ -21,7 +21,7 @@ public class Task {
 
     private String taskName;
 
-    @OneToOne
+    @ManyToOne
     private State state;
 
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.MERGE, orphanRemoval = true)

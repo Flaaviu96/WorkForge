@@ -1,32 +1,38 @@
 package dev.workforge.app.WorkForge.Controllers;
 
 import dev.workforge.app.WorkForge.DTO.*;
+import dev.workforge.app.WorkForge.Mapper.TaskMapper;
 import dev.workforge.app.WorkForge.Model.Attachment;
 import dev.workforge.app.WorkForge.Model.PermissionType;
+import dev.workforge.app.WorkForge.Model.Task;
 import dev.workforge.app.WorkForge.Security.PermissionCheck;
+import dev.workforge.app.WorkForge.Service.SecurityUserService;
 import dev.workforge.app.WorkForge.Service.TaskService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 @RestController
 @RequestMapping("/projects/{projectId}/tasks")
 public class TaskController {
 
     private final TaskService taskService;
+    private final SecurityUserService securityUserService;
+    private final TaskMapper taskMapper;
 
-    public TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService, SecurityUserService securityUserService, TaskMapper taskMapper) {
         this.taskService = taskService;
+        this.securityUserService = securityUserService;
+        this.taskMapper = taskMapper;
     }
 
     @GetMapping("/{taskId}")
@@ -34,7 +40,9 @@ public class TaskController {
     public ResponseEntity<TaskDTO> getTaskById(
             @PathVariable long projectId,
             @PathVariable long taskId) {
-        return ResponseEntity.ok(taskService.getTaskByIdAndProjectId(taskId, projectId));
+        Task task = taskService.getTaskByIdAndProjectId(taskId, projectId);
+        List<PermissionType> permissionTypeList = securityUserService.getProjectPermissionForUser(projectId);
+        return ResponseEntity.ok(taskMapper.toDTO(task, permissionTypeList));
     }
 
     @PutMapping
@@ -97,7 +105,7 @@ public class TaskController {
     public ResponseEntity<String> deleteAttachment(
             @PathVariable long projectId,
             @PathVariable long taskId,
-            @PathVariable String attachmentId) {
+            @PathVariable long attachmentId) {
         taskService.deleteAttachment(taskId, attachmentId);
         return ResponseEntity.ok("Task deleted successfully.");
     }
