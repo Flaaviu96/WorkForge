@@ -113,8 +113,4 @@ public class TaskCriteriaRepositoryImpl implements TaskCriteriaRepository {
                 .replaceAll("%+$", "%")
                 .toLowerCase();
     }
-
-    private boolean isPreviousPage(TaskFilter filter) {
-        return !Boolean.TRUE.equals(filter.isNextPage());
-    }
 }
