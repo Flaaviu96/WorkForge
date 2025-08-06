@@ -72,13 +72,13 @@ public class ProjectReadServiceImpl implements ProjectReadService {
     }
 
     @Override
-    public String getProjectIdBasedOnProjectKey(String projectKey) {
+    public Long getProjectIdBasedOnProjectKey(String projectKey) {
         if (projectKey != null && !projectKey.isBlank() && !projectKey.isEmpty()) {
             Project project = projectRepository.findProjectByProjectKey(projectKey)
                     .orElseThrow(()-> new ProjectException(ErrorMessages.PROJECT_NOT_FOUND, HttpStatus.NOT_FOUND));
-            return String.valueOf(project.getId());
+            return project.getId();
         }
-        return "";
+        return 0L;
     }
 
     @Override

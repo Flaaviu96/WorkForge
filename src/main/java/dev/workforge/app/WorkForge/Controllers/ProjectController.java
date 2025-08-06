@@ -36,7 +36,7 @@ public class ProjectController {
     }
 
     @GetMapping("/projects/{projectKey}")
-    public ResponseEntity<String> getProjectId(@PathVariable String projectKey) {
+    public ResponseEntity<Long> getProjectId(@PathVariable String projectKey) {
         return ResponseEntity.ok(projectReadService.getProjectIdBasedOnProjectKey(projectKey));
     }
 

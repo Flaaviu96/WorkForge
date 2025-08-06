@@ -4,6 +4,7 @@ import dev.workforge.app.WorkForge.DTO.UserDTO;
 import dev.workforge.app.WorkForge.Security.SecurityUser;
 import dev.workforge.app.WorkForge.Service.ServiceImpl.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody UserDTO userDTO, HttpServletRequest request) {
         authenticationService.login(userDTO, request);
+        request.getSession().setAttribute("user", userDTO.username());
         ResponseCookie cookie = ResponseCookie.from("SESSIONID", request.getSession().getId())
                 .httpOnly(true)
                 .secure(false)
@@ -43,6 +45,12 @@ public class LoginController {
                 .ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .build();
+    }
+
+    @GetMapping("/checkSession")
+    public ResponseEntity<Boolean> isSessionValid(HttpSession session) {
+        Object user = session.getAttribute("user");
+        return ResponseEntity.ok(user != null);
     }
 
     @PostMapping("/logout")

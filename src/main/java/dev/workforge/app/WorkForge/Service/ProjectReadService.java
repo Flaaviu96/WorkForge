@@ -46,7 +46,7 @@ public interface ProjectReadService {
      * @param projectKey the unique key associated with a project
      * @return the project ID as a String, or null/empty if not found
      */
-    String getProjectIdBasedOnProjectKey(String projectKey);
+    Long getProjectIdBasedOnProjectKey(String projectKey);
 
     /**
      * Retrieves a paginated list of tasks filtered by the provided TaskFilter criteria for a specific project.
