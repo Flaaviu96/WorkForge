@@ -1,10 +1,9 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
 import dev.workforge.app.WorkForge.DTO.UserDTO;
-import dev.workforge.app.WorkForge.Security.SecurityUser;
+import dev.workforge.app.WorkForge.Security.SecurityUser.SecurityUser;
 import dev.workforge.app.WorkForge.Security.UserSessionService;
-import dev.workforge.app.WorkForge.Service.SecurityUserService;
-import dev.workforge.app.WorkForge.Service.UserPermissionService;
+import dev.workforge.app.WorkForge.Service.Other.SecurityUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseCookie;

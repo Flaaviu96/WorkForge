@@ -1,8 +1,7 @@
 package dev.workforge.app.WorkForge.Controllers;
 
 import dev.workforge.app.WorkForge.DTO.ProjectPermissionsDTO;
-import dev.workforge.app.WorkForge.Service.UserPermissionService;
-import org.springframework.http.ResponseEntity;
+import dev.workforge.app.WorkForge.Service.UserPermission.UserPermissionService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,8 +19,7 @@ public class PermissionController {
     }
 
     @PostMapping("/assign")
-    public ResponseEntity<String> assignPermissionToUser(@RequestBody ProjectPermissionsDTO projectPermissionsDTO) {
+    public void assignPermissionToUser(@RequestBody ProjectPermissionsDTO projectPermissionsDTO) {
         userPermissionService.updateProjectPermissionsForUsers(projectPermissionsDTO);
-        return ResponseEntity.ok("Yes");
     }
 }

@@ -4,7 +4,7 @@
 //import dev.workforge.app.WorkForge.Projections.UserPermissionProjection;
 //import dev.workforge.app.WorkForge.Security.SecurityImpl.SecurityUserImpl;
 //import dev.workforge.app.WorkForge.Service.ServiceImpl.SecurityUserServiceImpl;
-//import dev.workforge.app.WorkForge.Service.UserPermissionService;
+//import dev.workforge.app.WorkForge.Service.UserPermission.UserPermissionService;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
 //import org.junit.jupiter.api.extension.ExtendWith;

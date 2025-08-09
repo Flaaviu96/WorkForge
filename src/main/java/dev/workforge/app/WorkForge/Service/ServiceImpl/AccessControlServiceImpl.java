@@ -3,10 +3,11 @@ package dev.workforge.app.WorkForge.Service.ServiceImpl;
 import dev.workforge.app.WorkForge.Exceptions.PermissionException;
 import dev.workforge.app.WorkForge.Model.Permission;
 import dev.workforge.app.WorkForge.Model.PermissionType;
-import dev.workforge.app.WorkForge.Security.SecurityUser;
+import dev.workforge.app.WorkForge.Model.UserPermissionSec;
+import dev.workforge.app.WorkForge.Security.SecurityUser.SecurityUser;
 import dev.workforge.app.WorkForge.Security.UserSessionService;
-import dev.workforge.app.WorkForge.Service.AccessControlService;
-import dev.workforge.app.WorkForge.Service.SecurityUserService;
+import dev.workforge.app.WorkForge.Service.Other.AccessControlService;
+import dev.workforge.app.WorkForge.Service.Other.SecurityUserService;
 import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -102,7 +103,7 @@ public class AccessControlServiceImpl implements AccessControlService {
      */
     private boolean hasPermissionsChanged(String sessionId) {
         SecurityUser securityUser = securityUserService.retrieveSecurityUser();
-        UserSessionService.UserPermission userPermissionTimestamps = userSessionService.getPermissionTimestampsFromRedis(String.valueOf(securityUser.getId()));
+        UserPermissionSec userPermissionTimestamps = userSessionService.getPermission(String.valueOf(securityUser.getId()));
         return userPermissionTimestamps.getUpdatedPermission() > userPermissionTimestamps.getBuildPermissionAt() &&
                 (userPermissionTimestamps.getUpdatedPermission() - userPermissionTimestamps.getBuildPermissionAt() >= 2_00);
     }

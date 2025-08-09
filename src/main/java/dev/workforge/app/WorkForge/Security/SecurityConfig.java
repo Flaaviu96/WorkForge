@@ -1,6 +1,6 @@
 package dev.workforge.app.WorkForge.Security;
 
-import dev.workforge.app.WorkForge.Service.ServiceImpl.UserServiceImpl;
+import dev.workforge.app.WorkForge.Service.UserPermission.UserPermissionImpl.UserServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,8 +15,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 

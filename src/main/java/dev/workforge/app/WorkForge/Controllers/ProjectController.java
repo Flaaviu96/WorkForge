@@ -2,9 +2,9 @@ package dev.workforge.app.WorkForge.Controllers;
 
 import dev.workforge.app.WorkForge.DTO.*;
 import dev.workforge.app.WorkForge.Model.PermissionType;
-import dev.workforge.app.WorkForge.Security.PermissionCheck;
-import dev.workforge.app.WorkForge.Service.ProjectReadService;
-import dev.workforge.app.WorkForge.Service.ProjectWriteService;
+import dev.workforge.app.WorkForge.Security.Aspect.PermissionCheck;
+import dev.workforge.app.WorkForge.Service.Project.ProjectReadService;
+import dev.workforge.app.WorkForge.Service.Project.ProjectWriteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,9 +59,8 @@ public class ProjectController {
 
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
     @PostMapping("/projects/{projectId}/saveNewTask")
-    public ResponseEntity<Void> saveNewTask(@PathVariable(name = "projectId") long projectId, @RequestBody TaskDTO taskDTO) {
+    public void saveNewTask(@PathVariable(name = "projectId") long projectId, @RequestBody TaskDTO taskDTO) {
         projectService.saveNewTaskIntoProject(projectId, taskDTO);
-        return null;
     }
 
     @PermissionCheck(permissionType = {PermissionType.READ})

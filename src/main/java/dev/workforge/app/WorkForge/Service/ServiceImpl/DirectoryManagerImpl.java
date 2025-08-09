@@ -1,6 +1,6 @@
 package dev.workforge.app.WorkForge.Service.ServiceImpl;
 
-import dev.workforge.app.WorkForge.Service.DirectoryManager;
+import dev.workforge.app.WorkForge.Service.Other.DirectoryManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

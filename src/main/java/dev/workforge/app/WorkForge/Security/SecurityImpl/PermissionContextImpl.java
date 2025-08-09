@@ -1,8 +1,8 @@
 package dev.workforge.app.WorkForge.Security.SecurityImpl;
 
 import dev.workforge.app.WorkForge.Model.Permission;
-import dev.workforge.app.WorkForge.Security.PermissionContext;
-import dev.workforge.app.WorkForge.Security.PermissionContextOperation;
+import dev.workforge.app.WorkForge.Security.SecurityUser.PermissionContext;
+import dev.workforge.app.WorkForge.Security.SecurityUser.PermissionContextOperation;
 
 import java.util.*;
 import java.util.stream.Collectors;

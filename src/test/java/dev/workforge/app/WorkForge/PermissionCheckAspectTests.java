@@ -2,11 +2,11 @@
 //
 //import dev.workforge.app.WorkForge.Model.Permission;
 //import dev.workforge.app.WorkForge.Model.PermissionType;
-//import dev.workforge.app.WorkForge.Security.PermissionCheck;
-//import dev.workforge.app.WorkForge.Security.AccessControlAspect;
-//import dev.workforge.app.WorkForge.Security.SecurityUser;
+//import dev.workforge.app.WorkForge.Security.Aspect.PermissionCheck;
+//import dev.workforge.app.WorkForge.Security.Aspect.AccessControlAspect;
+//import dev.workforge.app.WorkForge.Security.SecurityUser.SecurityUser;
 //import dev.workforge.app.WorkForge.Security.UserSessionService;
-//import dev.workforge.app.WorkForge.Service.SecurityUserService;
+//import dev.workforge.app.WorkForge.Service.Other.SecurityUserService;
 //import jakarta.servlet.http.HttpServletRequest;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;

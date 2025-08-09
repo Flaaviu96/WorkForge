@@ -1,7 +1,7 @@
 package dev.workforge.app.WorkForge.Controllers;
 
 import dev.workforge.app.WorkForge.DTO.WorkflowDTO;
-import dev.workforge.app.WorkForge.Service.WorkflowService;
+import dev.workforge.app.WorkForge.Service.Workflow.WorkflowService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

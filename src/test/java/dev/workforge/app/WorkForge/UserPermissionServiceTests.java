@@ -5,10 +5,10 @@
 //import dev.workforge.app.WorkForge.Model.*;
 //import dev.workforge.app.WorkForge.Repository.UserPermissionRepository;
 //import dev.workforge.app.WorkForge.Security.UserSessionService;
-//import dev.workforge.app.WorkForge.Service.PermissionService;
+//import dev.workforge.app.WorkForge.Service.UserPermission.PermissionService;
 //import dev.workforge.app.WorkForge.Service.ProjectService;
-//import dev.workforge.app.WorkForge.Service.ServiceImpl.UserPermissionServiceImpl;
-//import dev.workforge.app.WorkForge.Service.UserService;
+//import dev.workforge.app.WorkForge.Service.ServiceImpl.UserPermission.UserPermissionServiceImpl;
+//import dev.workforge.app.WorkForge.Service.UserPermission.UserService;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
 //import org.junit.jupiter.api.extension.ExtendWith;

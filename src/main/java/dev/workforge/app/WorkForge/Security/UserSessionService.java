@@ -1,90 +1,62 @@
 package dev.workforge.app.WorkForge.Security;
 
-import dev.workforge.app.WorkForge.Service.SecurityUserService;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import dev.workforge.app.WorkForge.Model.UserPermissionSec;
+import dev.workforge.app.WorkForge.Security.SecurityUser.PermissionContext;
+import dev.workforge.app.WorkForge.Security.SecurityUser.SecurityUser;
+import dev.workforge.app.WorkForge.Service.UserSession.PermissionTimestampStore;
+import dev.workforge.app.WorkForge.Service.Other.SecurityUserService;
+import dev.workforge.app.WorkForge.Service.UserSession.UserSessionStore;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
-
 @Service
 public class UserSessionService {
     private final SecurityUserService securityUserService;
-    private final RedisTemplate<Object, Object> redisTemplate;
-    private static final String USER_PREFIX = "USER_SESSION:";
-    private static final String PERMISSION_UPDATED_PREFIX = "PERMISSION_LAST_UPDATED:";
+    private final PermissionTimestampStore permissionTimestampStore;
+    private final UserSessionStore userSessionStore;
 
-    public UserSessionService(@Lazy SecurityUserService securityUserService, RedisTemplate<Object, Object> redisTemplate) {
+    public UserSessionService(@Lazy SecurityUserService securityUserService, RedisTemplate<Object, Object> redisTemplate, PermissionTimestampStore permissionTimestampStore, UserSessionStore userSessionStore) {
         this.securityUserService = securityUserService;
-        this.redisTemplate = redisTemplate;
+        this.permissionTimestampStore = permissionTimestampStore;
+        this.userSessionStore = userSessionStore;
     }
 
     public void storeUserOnLogin(String sessionId, SecurityUser securityUser) {
         if (sessionId != null && securityUser != null) {
-            redisTemplate.opsForValue().set(USER_PREFIX + sessionId, securityUser, 30, TimeUnit.MINUTES);
-
-            UserPermission userPermission = new UserPermission();
-            redisTemplate.opsForValue().set(
-                    PERMISSION_UPDATED_PREFIX + securityUser.getId(),
-                    userPermission,
-                    30, TimeUnit.MINUTES
-            );
+            userSessionStore.save(sessionId, securityUser);
+            UserPermissionSec userPermission = new UserPermissionSec();
+            permissionTimestampStore.save(String.valueOf(securityUser.getId()), userPermission);
         }
     }
 
     public void storeUserInRedis(String sessionId, SecurityUser securityUser) {
         if (sessionId != null && securityUser != null) {
-            redisTemplate.opsForValue().set(USER_PREFIX + sessionId, securityUser, 30, TimeUnit.MINUTES);
-
+            userSessionStore.save(sessionId, securityUser);
             PermissionContext permissionContext = securityUser.getPermissionContext();
             if (permissionContext != null
                     && permissionContext.getBuildPermissionAt() != 0
                     && permissionContext.getUpdatedPermission() != 0) {
 
-                UserPermission userPermission = new UserPermission(
+                UserPermissionSec userPermission = new UserPermissionSec(
                         permissionContext.getBuildPermissionAt(),
                         permissionContext.getUpdatedPermission()
                 );
-
-                redisTemplate.opsForValue().set(
-                        PERMISSION_UPDATED_PREFIX + securityUser.getId(),
-                        userPermission,
-                        30, TimeUnit.MINUTES
-                );
+                permissionTimestampStore.save(String.valueOf(securityUser.getId()),userPermission);
             }
         }
     }
 
-    @Setter
-    @Getter
-    public static class UserPermission implements Serializable {
-        private long buildPermissionAt;
-        private long updatedPermission;
-
-        UserPermission(long buildPermissionAt, long updatedPermission) {
-            this.buildPermissionAt = buildPermissionAt;
-            this.updatedPermission = updatedPermission;
-        }
-
-        UserPermission() {
-            this.buildPermissionAt = System.currentTimeMillis();
-        }
+    public UserPermissionSec getPermission(String userId) {
+        return permissionTimestampStore.find(userId);
     }
 
-    public boolean hasKey(String key) {
-        return redisTemplate.hasKey(USER_PREFIX + key);
-    }
-
-    public SecurityUser getUserFromRedis(String key) {
-        SecurityUser securityUser = getObjectFromRedis(USER_PREFIX + key, SecurityUser.class);
+    public SecurityUser getUserFromRedis(String sessionId) {
+        SecurityUser securityUser = userSessionStore.find(sessionId);
         if (securityUser == null) {
             return null;
         }
-        UserPermission userPermission = getPermissionTimestampsFromRedis(String.valueOf(securityUser.getId()));
+        UserPermissionSec userPermission = permissionTimestampStore.find(String.valueOf(securityUser.getId()));
         if (userPermission == null) {
             return securityUser;
         }
@@ -93,32 +65,7 @@ public class UserSessionService {
         return securityUser;
     }
 
-    public UserPermission getPermissionTimestampsFromRedis(String key) {
-        return getObjectFromRedis(PERMISSION_UPDATED_PREFIX + key, UserPermission.class);
-    }
-
-    public void updatePermissionTimestampsFromRedis(String key) {
-        UserPermission userPermission = getObjectFromRedis(PERMISSION_UPDATED_PREFIX + key, UserPermission.class);
-        if (userPermission != null) {
-            userPermission.setUpdatedPermission(System.currentTimeMillis());
-            redisTemplate.opsForValue().set(PERMISSION_UPDATED_PREFIX + key, userPermission, 30, TimeUnit.MINUTES);
-        }
-    }
-
-    private <T> T getObjectFromRedis(@NonNull String key, Class<T> type) {
-        Object value = redisTemplate.opsForValue().get(key);
-        if (value == null) {
-            return null;
-        }
-        if (!type.isInstance(value)) {
-            throw new IllegalStateException("Retrieved object is not of type " + type.getSimpleName());
-        }
-        return type.cast(value);
-    }
-
-    public void removeUserFromRedis(String key) {
-        if (key != null) {
-            redisTemplate.delete(key);
-        }
+    public boolean hasKey(String sessionId) {
+        return userSessionStore.hasKey(sessionId);
     }
 }

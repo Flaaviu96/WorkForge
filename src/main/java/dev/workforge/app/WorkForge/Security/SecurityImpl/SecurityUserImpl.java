@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.workforge.app.WorkForge.Model.AppUser;
-import dev.workforge.app.WorkForge.Security.PermissionContext;
-import dev.workforge.app.WorkForge.Security.SecurityUser;
+import dev.workforge.app.WorkForge.Security.SecurityUser.PermissionContext;
+import dev.workforge.app.WorkForge.Security.SecurityUser.SecurityUser;
 
 
 public class SecurityUserImpl implements SecurityUser {
