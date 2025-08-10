@@ -68,4 +68,8 @@ public class UserSessionService {
     public boolean hasKey(String sessionId) {
         return userSessionStore.hasKey(sessionId);
     }
+
+    public void removeUserFromRedis() {
+
+    }
 }

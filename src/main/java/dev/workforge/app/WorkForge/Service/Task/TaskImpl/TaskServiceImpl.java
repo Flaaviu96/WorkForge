@@ -117,7 +117,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskPatchDTO updateTask(long projectId, long taskId, TaskPatchDTO taskPatchDTO) {
+    public TaskPatchResponseDTO updateTask(long projectId, long taskId, TaskPatchRequestDTO taskPatchDTO) {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND));
         if (taskPatchDTO.taskTimeTrackingDTO() != null) {
             task.getTaskTimeTracking().setLoggedHours(taskPatchDTO.taskTimeTrackingDTO().loggedHours());

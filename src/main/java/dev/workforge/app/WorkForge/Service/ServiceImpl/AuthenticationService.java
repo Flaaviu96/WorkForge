@@ -65,7 +65,7 @@ public class AuthenticationService {
         if (session != null) {
             session.invalidate();
             String sessionId = session.getId();
-            userSessionService.removeUserFromRedis(sessionId);
+            userSessionService.removeUserFromRedis();
             SecurityContextHolder.clearContext();
         }
     }

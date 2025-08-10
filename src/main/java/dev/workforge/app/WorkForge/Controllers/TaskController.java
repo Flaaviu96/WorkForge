@@ -57,10 +57,10 @@ public class TaskController {
 
     @PatchMapping("{taskId}/metadata")
     @PermissionCheck(permissionType = {PermissionType.READ, PermissionType.WRITE})
-    public ResponseEntity<TaskPatchDTO> updateTaskMetadata(
+    public ResponseEntity<TaskPatchResponseDTO> updateTaskMetadata(
             @PathVariable long projectId,
             @PathVariable long taskId,
-            @RequestBody TaskPatchDTO taskPatchDTO
+            @RequestBody TaskPatchRequestDTO taskPatchDTO
     ) {
         return ResponseEntity.ok(taskService.updateTask(projectId, taskId, taskPatchDTO));
     }

@@ -33,4 +33,9 @@ public class PermissionTimestampStoreImpl implements PermissionTimestampStore {
         userPermissionSec.setUpdatedPermission(System.currentTimeMillis());
         this.save(userId, userPermissionSec);
     }
+
+    @Override
+    public boolean hasKey(String userId) {
+        return redisRepository.exists(userId);
+    }
 }

@@ -5,6 +5,5 @@ import lombok.Builder;
 @Builder
 public record TaskMetadataDTO(
      String assignedTo,
-     String createdBy,
      String description
 ) {}

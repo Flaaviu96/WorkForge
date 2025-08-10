@@ -12,6 +12,7 @@ import dev.workforge.app.WorkForge.Service.Project.ProjectReadService;
 import dev.workforge.app.WorkForge.Service.UserPermission.PermissionService;
 import dev.workforge.app.WorkForge.Service.UserPermission.UserPermissionService;
 import dev.workforge.app.WorkForge.Service.UserPermission.UserService;
+import dev.workforge.app.WorkForge.Service.UserSession.PermissionTimestampStore;
 import dev.workforge.app.WorkForge.Util.ErrorMessages;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     private final PermissionService permissionService;
     private final UserService userService;
     private final ProjectReadService projectService;
-    private final UserSessionService userSessionService;
+    private final PermissionTimestampStore permissionTimestampStore;
 
     /**
      *
@@ -44,14 +45,13 @@ public class UserPermissionServiceImpl implements UserPermissionService {
      * @param permissionService        Service for managing permissions.
      * @param userService              Service for managing users.
      * @param projectService           Service for managing projects.
-     * @param userSessionService       Service for managing user sessions.
      */
-    public UserPermissionServiceImpl(UserPermissionRepository userPermissionRepository, PermissionService permissionService, UserService userService, ProjectReadService projectService, UserSessionService userSessionService) {
+    public UserPermissionServiceImpl(UserPermissionRepository userPermissionRepository, PermissionService permissionService, UserService userService, ProjectReadService projectService, PermissionTimestampStore permissionTimestampStore) {
         this.userPermissionRepository = userPermissionRepository;
         this.permissionService = permissionService;
         this.userService = userService;
         this.projectService = projectService;
-        this.userSessionService = userSessionService;
+        this.permissionTimestampStore = permissionTimestampStore;
     }
 
     /**
@@ -164,7 +164,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         userPermission.setUser(appUser);
         userPermission.setProject(project);
         userPermission.setPermissions(new HashSet<>(permissions));
-        userSessionService.updatePermissionTimestampsFromRedis(String.valueOf(appUser.getId()));
+        permissionTimestampStore.updateTimeStamp(String.valueOf(appUser.getId()));
         userPermissionRepository.save(userPermission);
     }
 
@@ -223,8 +223,8 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                         .anyMatch(userPermission -> userPermission.getUser().getId() == appUser.getId()))
                 .toList();
         for (AppUser appUser : appUsersUpdated) {
-            if (userSessionService.hasKey(appUser.getUsername())) {
-                userSessionService.updatePermissionTimestampsFromRedis(String.valueOf(appUser.getId()));
+            if (permissionTimestampStore.hasKey(String.valueOf(appUser.getId()))) {
+                permissionTimestampStore.updateTimeStamp(String.valueOf(appUser.getId()));
             }
         }
     }

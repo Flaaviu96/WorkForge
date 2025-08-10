@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.Date;
 
 @Builder
-public record TaskPatchDTO(
+public record TaskPatchRequestDTO(
         String taskName,
         String fromState,
         String toState,

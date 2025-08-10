@@ -2,13 +2,13 @@ package dev.workforge.app.WorkForge.Mapper;
 
 import dev.workforge.app.WorkForge.DTO.TaskDTO;
 import dev.workforge.app.WorkForge.DTO.TaskMetadataDTO;
-import dev.workforge.app.WorkForge.DTO.TaskPatchDTO;
+import dev.workforge.app.WorkForge.DTO.TaskPatchRequestDTO;
+import dev.workforge.app.WorkForge.DTO.TaskPatchResponseDTO;
 import dev.workforge.app.WorkForge.Model.PermissionType;
 import dev.workforge.app.WorkForge.Model.Task;
 import dev.workforge.app.WorkForge.Model.TaskMetadata;
 import dev.workforge.app.WorkForge.Projections.TaskProjection;
 import org.mapstruct.*;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Set;
@@ -54,9 +54,8 @@ public interface TaskMapper {
 
     TaskMetadataDTO toTaskMetaDTO(TaskMetadata taskMetadata);
 
-    @Mapping(target = "fromState", source = "state.name")
+    @Mapping(target = "state", source = "state.name")
     @Mapping(target = "taskMetadataDTO", source = "taskMetadata")
-    @Mapping(target = "taskTimeTrackingDTO", source = "taskTimeTracking")
-    TaskPatchDTO toTaskPathDTO(Task task);
+    TaskPatchResponseDTO toTaskPathDTO(Task task);
 
 }

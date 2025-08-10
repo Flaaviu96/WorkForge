@@ -6,4 +6,5 @@ public interface PermissionTimestampStore {
     void save(String userId, UserPermissionSec securityUser);
     UserPermissionSec find(String userId);
     void updateTimeStamp(String userId);
+    boolean hasKey(String userId);
 }

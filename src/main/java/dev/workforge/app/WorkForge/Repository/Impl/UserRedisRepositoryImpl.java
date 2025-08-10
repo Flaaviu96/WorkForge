@@ -25,8 +25,8 @@ public class UserRedisRepositoryImpl implements UserRedisRepository {
     }
 
     @Override
-    public boolean exists(String sessionId) {
-        return false;
+    public boolean exists(String key) {
+        return redisTemplate.hasKey(key);
     }
 
     @Override

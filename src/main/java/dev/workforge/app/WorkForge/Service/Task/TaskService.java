@@ -86,9 +86,9 @@ public interface TaskService {
      * @param projectId     the ID of the project
      * @param taskId        the ID of the task
      * @param taskPatchDTO  the patch data to apply
-     * @return the updated {@link TaskPatchDTO}
+     * @return the updated {@link TaskPatchRequestDTO}
      */
-    TaskPatchDTO updateTask(long projectId, long taskId, TaskPatchDTO taskPatchDTO);
+    TaskPatchResponseDTO updateTask(long projectId, long taskId, TaskPatchRequestDTO taskPatchDTO);
 
     /**
      * Deletes a specific attachment from a task.
