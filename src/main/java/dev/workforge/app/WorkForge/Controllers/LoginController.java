@@ -27,18 +27,7 @@ public class LoginController {
     public ResponseEntity<Void> login(@RequestBody UserDTO userDTO, HttpServletRequest request) {
         authenticationService.login(userDTO, request);
         request.getSession().setAttribute("user", userDTO.username());
-        ResponseCookie cookie = ResponseCookie.from("SESSIONID", request.getSession().getId())
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("None")
-                .path("/")
-                .maxAge(Duration.ofHours(1))
-                .build();
-
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .build();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/checkSession")

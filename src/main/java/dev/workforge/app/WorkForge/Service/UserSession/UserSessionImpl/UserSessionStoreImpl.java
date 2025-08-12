@@ -33,6 +33,6 @@ public class UserSessionStoreImpl implements UserSessionStore {
 
     @Override
     public boolean hasKey(String sessionId) {
-        return redisRepository.exists(sessionId);
+        return redisRepository.exists(USER_PREFIX + sessionId);
     }
 }

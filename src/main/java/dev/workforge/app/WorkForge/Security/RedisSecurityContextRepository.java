@@ -3,6 +3,7 @@ package dev.workforge.app.WorkForge.Security;
 import dev.workforge.app.WorkForge.Security.SecurityUser.SecurityUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -47,10 +48,18 @@ public class RedisSecurityContextRepository implements SecurityContextRepository
         Authentication authentication = context.getAuthentication();
 
         if (authentication.getPrincipal() instanceof SecurityUser securityUser) {
-            String sessionId = request.getSession(true).getId();
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                // No session, do NOT create one just to save context.
+                // This avoids creating session on every request.
+                return;
+            }
+            String sessionId = session.getId();
             securityUserService.storeUserInRedis(sessionId, securityUser);
         }
     }
+
+
 
     @Override
     public boolean containsContext(HttpServletRequest request) {

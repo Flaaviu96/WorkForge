@@ -53,7 +53,17 @@ public class AuthenticationService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
             securityUserService.loadUserPermissionsIntoUserDetails(securityUser);
-            userSessionService.storeUserOnLogin(request.getSession().getId(), securityUser);
+
+            // Invalidate old session (if exists)
+            HttpSession oldSession = request.getSession(false);
+            if (oldSession != null) {
+                oldSession.invalidate();
+            }
+
+            // Create a new session to prevent session fixation
+            HttpSession newSession = request.getSession(true);
+            userSessionService.storeUserOnLogin(newSession.getId(), securityUser);
+
         } catch (AuthenticationException e) {
             throw new AuthenticationCredentialsNotFoundException("Bad credentials");
         }
