@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class AppInitializer implements CommandLineRunner {
 
         Workflow workflow = createWorkflow(states, createAbstractTrigger());
 
-        createAndSaveProject(workflow, states.get(0));
+        createAndSaveProject(workflow, states);
         createAndSaveUser("dicas","dicas");
         createAndSaveUser("test","test");
         createAndSaveUserPermissions("dicas",1L);
@@ -118,34 +119,70 @@ public class AppInitializer implements CommandLineRunner {
         return comment;
     }
 
-    private void createAndSaveProject(Workflow workflow, State state) {
+    private void createAndSaveProject(Workflow workflow, List<State> states) {
         Project project = Project.builder()
                         .projectName("Test")
                                 .workflow(workflow)
                 .projectKey(ProjectKeyGenerator.generateKey("Test"))
                                         .build();
 
-        Task task = createTask(project, state, "test1");
-        TaskMetadata taskMetadata = new TaskMetadata();
-        taskMetadata.setDescription("This is a dummy description for the task");
-        taskMetadata.setAssignedTo("Dicas");
-        taskMetadata.setCreatedBy("dicas");
-        task.setTaskMetadata(taskMetadata);
-        TaskTimeTracking taskTimeTracking = new TaskTimeTracking();
-        task.setTaskTimeTracking(taskTimeTracking);
-        Comment comment = createComment(task,"This is a test for the frontend", "dicas", 1);
-        Comment comment1 = createComment(task, "This is another test", "dicas", 1);
-        task.getComments().addAll(List.of(comment, comment1));
-        Task task1 = createTask(project, state, "te");
-        Comment comment2 = createComment(task1,"This is a test for the frontend", "dicas", 1);
-        Comment comment3 = createComment(task1, "This is another test", "dicas", 1);
-        task1.setTaskMetadata(taskMetadata);
-        task1.getComments().addAll(List.of(comment2, comment3));
-        Task task2 = createTask(project, state, "tes");
+        List<String> taskNames = List.of(
+                "backend-integration", "ui-polish", "api-error-handling", "documentation", "unit-tests",
+                "performance-optimization", "database-migration", "email-service", "websocket-setup", "bugfix-login",
+                "refactor-service-layer", "security-patch", "frontend-pagination", "image-upload", "report-generation",
+                "user-profile-edit", "dark-mode-support", "data-export", "push-notifications", "analytics-dashboard"
+        );
 
-        project.setTasks(Set.of(task,
-                task1, task2
-        ));
+        List<String> descriptions = List.of(
+                "Implement backend integration for authentication",
+                "Polish UI with Tailwind and accessibility fixes",
+                "Improve API error handling",
+                "Write developer documentation",
+                "Add unit tests for service layer",
+                "Optimize query performance",
+                "Migrate database to new schema",
+                "Implement email notification service",
+                "Setup WebSocket communication",
+                "Fix login redirect bug",
+                "Refactor service layer for maintainability",
+                "Apply latest security patch",
+                "Implement frontend pagination",
+                "Add image upload feature",
+                "Generate PDF reports",
+                "Allow users to edit profile info",
+                "Add dark mode toggle",
+                "Export data in CSV format",
+                "Implement push notifications",
+                "Create analytics dashboard"
+        );
+
+        List<String> assignees = List.of("Alice", "Bob", "Charlie", "Dicas", "Eve");
+
+        Set<Task> taskSet = new HashSet<>();
+
+        for (int i = 0; i < 4; i++) {
+            Task taskX = createTask(project, states.get(i), taskNames.get(i));
+
+            TaskMetadata metadata = new TaskMetadata();
+            metadata.setDescription(descriptions.get(i));
+            metadata.setAssignedTo(assignees.get(i % assignees.size())); // cycle through assignees
+            metadata.setCreatedBy("system");
+            taskX.setTaskMetadata(metadata);
+
+            taskX.setTaskTimeTracking(new TaskTimeTracking());
+
+            // Add 1–2 comments
+            taskX.getComments().add(createComment(taskX, "Initial setup for " + taskNames.get(i), metadata.getCreatedBy(), 1));
+            if (i % 2 == 0) {
+                taskX.getComments().add(createComment(taskX, "Follow-up for " + taskNames.get(i), metadata.getAssignedTo(), 2));
+            }
+
+            taskSet.add(taskX);
+        }
+
+        project.setTasks(taskSet);
+
+
 
         projectRepository.saveAndFlush(project);
     }

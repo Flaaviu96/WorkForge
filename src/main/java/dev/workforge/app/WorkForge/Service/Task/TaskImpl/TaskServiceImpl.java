@@ -66,15 +66,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public PageResultDTO<TaskSummaryDTO> getPaginatedTaskSummaries(TaskFilter taskFilter, long projectId) {
-        if (taskFilter != null &&
-                taskFilter.getTaskName() == null &&
-                taskFilter.getCreatedDateFrom() == null &&
-                taskFilter.getCreatedDateTo() == null &&
-                taskFilter.getState() == null &&
-                taskFilter.getAssignedTo() == null) {
-
-            throw new TaskException(ErrorMessages.TASK_NOT_FOUND, HttpStatus.NOT_FOUND);
-        }
         return taskCriteriaRepository.findTasksByFilter(taskFilter, projectId);
     }
 
