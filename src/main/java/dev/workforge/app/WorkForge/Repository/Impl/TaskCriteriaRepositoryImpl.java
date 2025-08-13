@@ -59,10 +59,14 @@ public class TaskCriteriaRepositoryImpl implements TaskCriteriaRepository {
         if (!filter.isNextPage() && !filter.isFirstSearch()) {
             Collections.reverse(results);
         }
-
-        Long prevCursor = results.isEmpty() ? null : results.get(0).taskId();
-        Long nextCursor = results.isEmpty() ? null : results.get(results.size() - 1).taskId();
-
+        Long prevCursor = 0L, nextCursor = 0L;
+        if (!filter.isNextPage()) {
+            prevCursor = !hasMore ? 0 : results.get(0).taskId();
+            nextCursor = results.isEmpty() ? 0 : results.get(results.size() - 1).taskId();
+        } else {
+            prevCursor = results.isEmpty() ? 0 : results.get(0).taskId();
+            nextCursor = !hasMore ? 0 : results.get(results.size() - 1).taskId();
+        }
         return new PageResultDTO<>(results, hasMore, nextCursor, prevCursor);
     }
 
@@ -73,10 +77,9 @@ public class TaskCriteriaRepositoryImpl implements TaskCriteriaRepository {
             if (filter.getAssignedTo() != null) {
                 predicates.add(cb.equal(root.get("taskMetadata").get("assignedTo"), filter.getAssignedTo()));
             }
-            if (filter.getTaskName() != null) {
+            if (filter.getTaskName() != null && isValid(filter.getTaskName())) {
                 predicates.add(cb.like(
-                        cb.lower(root.get("taskName")),
-                        "%" + normalizeLikePattern(filter.getTaskName()) + "%"
+                        cb.lower(root.get("taskName")), normalizeLikePattern(filter.getTaskName())
                 ));
             }
             if (filter.getState() != null) {
@@ -107,5 +110,10 @@ public class TaskCriteriaRepositoryImpl implements TaskCriteriaRepository {
                 .replaceAll("^%+", "%")
                 .replaceAll("%+$", "%")
                 .toLowerCase();
+    }
+
+    private boolean isValid(String taskname) {
+        String regex = "^(?!\\*+$)(?!.*\\*{2,}).*$";
+        return taskname.matches(regex);
     }
 }

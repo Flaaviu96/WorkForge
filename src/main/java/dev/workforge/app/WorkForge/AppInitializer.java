@@ -160,9 +160,13 @@ public class AppInitializer implements CommandLineRunner {
 
         Set<Task> taskSet = new HashSet<>();
 
-        for (int i = 0; i < 4; i++) {
-            Task taskX = createTask(project, states.get(i), taskNames.get(i));
-
+        int counter = 0;
+        for (int i = 0; i < taskNames.size(); i++) {
+            if (counter == 4) {
+                counter = 0;
+            }
+            Task taskX = createTask(project, states.get(counter), taskNames.get(i));
+            counter ++;
             TaskMetadata metadata = new TaskMetadata();
             metadata.setDescription(descriptions.get(i));
             metadata.setAssignedTo(assignees.get(i % assignees.size())); // cycle through assignees
@@ -171,7 +175,6 @@ public class AppInitializer implements CommandLineRunner {
 
             taskX.setTaskTimeTracking(new TaskTimeTracking());
 
-            // Add 1–2 comments
             taskX.getComments().add(createComment(taskX, "Initial setup for " + taskNames.get(i), metadata.getCreatedBy(), 1));
             if (i % 2 == 0) {
                 taskX.getComments().add(createComment(taskX, "Follow-up for " + taskNames.get(i), metadata.getAssignedTo(), 2));
