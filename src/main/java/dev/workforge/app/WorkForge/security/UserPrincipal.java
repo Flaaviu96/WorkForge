@@ -1,7 +1,6 @@
-package dev.workforge.app.WorkForge.security.model;
+package dev.workforge.app.WorkForge.security;
 
-import dev.workforge.app.WorkForge.security.PermissionContext;
-import dev.workforge.app.WorkForge.security.impl.PermissionContextImpl;
+
 
 public class UserPrincipal {
     private final String username;

@@ -22,7 +22,7 @@ public class ProjectController {
         this.projectReadService = projectReadService;
     }
 
-    @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ])")
+    //@PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ])")
     @GetMapping("/projects/{projectId}/tasks")
     public ResponseEntity<List<TaskDTO>> getTasksWithSummaries(@PathVariable long projectId) {
         return ResponseEntity.ok(projectReadService.getTasksWithSummaries(projectId));

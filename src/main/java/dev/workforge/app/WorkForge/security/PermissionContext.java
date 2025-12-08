@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-interface PermissionContext extends Serializable {
+public interface PermissionContext extends Serializable {
 
     /**
      * Returns a map of permissions grouped by project ID.
@@ -17,32 +17,6 @@ interface PermissionContext extends Serializable {
      */
     Map<Long, Set<Permission>> getPermissionMap();
 
-    /**
-     * Returns the timestamp (in milliseconds or another defined unit) indicating when the permissions
-     * were last updated.
-     *
-     * @return the timestamp of the last permissions update
-     */
-    long getUpdatedPermission();
+    long getVersion();
 
-    /**
-     * Returns the timestamp indicating when the permission context was last built or constructed.
-     *
-     * @return the timestamp when the permission context was built
-     */
-    long getBuildPermissionAt();
-
-    /**
-     * Sets the timestamp indicating when the permissions were last updated.
-     *
-     * @param updatePermissionAt the new timestamp for the last permissions update
-     */
-    void setUpdatedPermission(long updatePermissionAt);
-
-    /**
-     * Sets the timestamp indicating when the permission context was last built.
-     *
-     * @param buildPermissionAt the new timestamp for when the permission context was built
-     */
-    void setBuildPermissionAt(long buildPermissionAt);
 }

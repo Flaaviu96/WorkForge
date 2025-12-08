@@ -1,13 +1,14 @@
 package dev.workforge.app.WorkForge.repository;
+import dev.workforge.app.WorkForge.security.UserPrincipal;
 
-import org.springframework.stereotype.Repository;
-
-import java.util.concurrent.TimeUnit;
-
-@Repository
 public interface UserRedisRepository {
-    <T> void set(String key, T value, long timeout, TimeUnit timeUnit);
-    void delete(String sessionId);
-    boolean exists(String sessionId);
-    <T> T get(String sessionId, Class<T> type);
+
+    void save(String key, UserPrincipal value);
+
+    void delete(String key);
+
+    boolean hasKey(String key);
+
+    UserPrincipal find(String key);
 }
+

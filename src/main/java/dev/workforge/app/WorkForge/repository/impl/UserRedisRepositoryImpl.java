@@ -1,6 +1,7 @@
 package dev.workforge.app.WorkForge.repository.impl;
 
 import dev.workforge.app.WorkForge.repository.UserRedisRepository;
+import dev.workforge.app.WorkForge.security.UserPrincipal;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -8,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 @Repository
 public class UserRedisRepositoryImpl implements UserRedisRepository {
+
     private final RedisTemplate<Object, Object> redisTemplate;
 
     public UserRedisRepositoryImpl(RedisTemplate<Object, Object> redisTemplate) {
@@ -15,27 +17,27 @@ public class UserRedisRepositoryImpl implements UserRedisRepository {
     }
 
     @Override
-    public <T> void set(String key, T value, long timeout, TimeUnit timeUnit) {
-        redisTemplate.opsForValue().set(key, value, timeout, timeUnit);
+    public void save(String key, UserPrincipal value) {
+        redisTemplate.opsForValue().set(key, value, 30, TimeUnit.MINUTES);
     }
 
     @Override
-    public void delete(String sessionId) {
-        redisTemplate.delete(sessionId);
+    public void delete(String key) {
+        redisTemplate.delete(key);
     }
 
     @Override
-    public boolean exists(String key) {
-        return redisTemplate.hasKey(key);
+    public boolean hasKey(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
     @Override
-    public <T> T get(String sessionId, Class<T> type) {
-        Object value = redisTemplate.opsForValue().get(sessionId);
-        if (value == null) return null;
-        if (!type.isInstance(value)) {
-            throw new IllegalStateException("Expected type " + type.getSimpleName());
+    public UserPrincipal find(String key) {
+        Object value = redisTemplate.opsForValue().get(key);
+
+        if (value == null) {
+            return null;
         }
-        return type.cast(value);
+        return (UserPrincipal) value;
     }
 }

@@ -3,12 +3,16 @@ package dev.workforge.app.WorkForge.service.impl;
 import dev.workforge.app.WorkForge.exceptions.PermissionException;
 import dev.workforge.app.WorkForge.model.Permission;
 import dev.workforge.app.WorkForge.model.PermissionType;
-import dev.workforge.app.WorkForge.security.user.UserPermissionSchemeService;
-import dev.workforge.app.WorkForge.security.model.UserPrincipal;
+import dev.workforge.app.WorkForge.projections.UserPermissionProjection;
+import dev.workforge.app.WorkForge.security.UserPrincipal;
 import dev.workforge.app.WorkForge.service.other.AccessControlService;
 import dev.workforge.app.WorkForge.security.SecurityUserService;
+import dev.workforge.app.WorkForge.service.user_permission.UserPermissionService;
+import dev.workforge.app.WorkForge.service.usersession.impl.PermissionVersionService;
+import dev.workforge.app.WorkForge.service.usersession.impl.UserPermissionCacheServiceImpl;
 import dev.workforge.app.WorkForge.util.ErrorMessages;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,11 +23,15 @@ import java.util.Set;
 public class AccessControlServiceImpl implements AccessControlService {
 
     private final SecurityUserService securityUserService;
-    private final UserPermissionSchemeService userPermissionService;
+    private final UserPermissionCacheServiceImpl userPermissionCacheService;
+    private final UserPermissionService userPermissionService;
+    private final PermissionVersionService permissionVersionService;
 
-    public AccessControlServiceImpl(SecurityUserService securityUserService, UserPermissionSchemeService userPermissionService) {
+    public AccessControlServiceImpl(SecurityUserService securityUserService, UserPermissionCacheServiceImpl userPermissionCacheRepository, UserPermissionService userPermissionService, PermissionVersionService permissionVersionService) {
         this.securityUserService = securityUserService;
+        this.userPermissionCacheService = userPermissionCacheRepository;
         this.userPermissionService = userPermissionService;
+        this.permissionVersionService = permissionVersionService;
     }
 
     @Override
@@ -32,12 +40,13 @@ public class AccessControlServiceImpl implements AccessControlService {
             return false;
         }
 
-        UserPrincipal userPrincipal = securityUserService.retrieveSecurityUser();
-
-        if (sessionId != null && hasPermissionsChanged(sessionId)) {
-            securityUserService.refreshUserPermissionsForUserDetails(userPrincipal);
-            securityUserService.getPermissionContextOperation(userPrincipal).rebuildTimestamps();
-            userPermissionService.storeUserPermissionInRedis(sessionId, userPrincipal);
+        UserPrincipal userPrincipal = securityUserService.getContext().retrieveSecurityUser();
+        final long redisVersion = permissionVersionService.get(sessionId);
+        if (sessionId != null && hasPermissionsChanged(sessionId, redisVersion)) {
+            List<UserPermissionProjection> userPermissionProjections = userPermissionService.getPermissionsForUser(userPrincipal.getUsername());
+            securityUserService.getPermissionManager().reloadPermissionsIntoPermissionContext(userPrincipal, userPermissionProjections);
+            securityUserService.getMaintenance().setVersion(redisVersion);
+            userPermissionCacheService.storeUserPermissionInRedis(sessionId, userPrincipal);
         }
 
         Map<Long, Set<Permission>> permissions = userPrincipal.getPermissionContext().getPermissionMap();
@@ -78,7 +87,7 @@ public class AccessControlServiceImpl implements AccessControlService {
     @Override
     public int[] getAvailableProjectsForCurrentUser() {
 
-        Map<Long, Set<Permission>> permissions = securityUserService.getPermissionContext().getPermissionMap();
+        Map<Long, Set<Permission>> permissions = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getPermissionContext().getPermissionMap();
         return permissions.keySet().stream()
                 .mapToInt(Long::intValue)
                 .toArray();
@@ -103,11 +112,9 @@ public class AccessControlServiceImpl implements AccessControlService {
      * @param sessionId the session ID of the user
      * @return true if the user's permissions have changed; false otherwise
      */
-    private boolean hasPermissionsChanged(String sessionId) {
-        UserPrincipal securityUser = securityUserService.retrieveSecurityUser();
-        long permissionBuildAt = securityUser.getPermissionContext().getBuildPermissionAt();
-        long permissionUpdatedAt = securityUser.getPermissionContext().getUpdatedPermission();
-        return permissionUpdatedAt > permissionBuildAt &&
-                (permissionUpdatedAt - permissionBuildAt >= 2_00);
+    private boolean hasPermissionsChanged(String sessionId, long redisVersion) {
+        UserPrincipal securityUser = securityUserService.getContext().retrieveSecurityUser();
+        long localVersion = securityUser.getPermissionContext().getVersion();
+        return redisVersion > localVersion;
     }
 }

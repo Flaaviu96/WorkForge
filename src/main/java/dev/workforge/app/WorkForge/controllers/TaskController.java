@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
-@RequestMapping("/projects/{projectId}/tasks")
+@RequestMapping("/tasks")
 public class TaskController {
 
     private final TaskService taskService;
@@ -38,17 +38,17 @@ public class TaskController {
     @GetMapping("/{taskId}")
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ])")
     public ResponseEntity<TaskDTO> getTaskById(
-            @PathVariable long projectId,
+            @RequestParam("projectId") long projectId,
             @PathVariable long taskId) {
         Task task = taskService.getTaskByIdAndProjectId(taskId, projectId);
-        List<PermissionType> permissionTypeList = securityUserService.getProjectPermissionForUser(projectId);
+        List<PermissionType> permissionTypeList = securityUserService.getContext().getProjectPermissionForUser(projectId);
         return ResponseEntity.ok(taskMapper.toDTO(task, permissionTypeList));
     }
 
     @PutMapping
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ, T(PermissionType).WRITE])")
     public ResponseEntity<TaskDTO> updateTask(
-            @PathVariable long projectId,
+            @RequestParam long projectId,
             @RequestBody TaskDTO taskDTO
     ) {
         TaskDTO taskDTOUpdated = taskService.updateTaskWithoutCommentsAndAttachments(taskDTO, projectId);
@@ -58,7 +58,7 @@ public class TaskController {
     @PatchMapping("{taskId}/metadata")
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ, T(PermissionType).WRITE])")
     public ResponseEntity<TaskPatchResponseDTO> updateTaskMetadata(
-            @PathVariable long projectId,
+            @RequestParam("projectId") long projectId,
             @PathVariable long taskId,
             @RequestBody TaskPatchRequestDTO taskPatchDTO
     ) {
@@ -68,7 +68,7 @@ public class TaskController {
     @PatchMapping("/{taskId}/comments")
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ, T(PermissionType).WRITE])")
     public ResponseEntity<?> updateComment(
-            @PathVariable long projectId,
+            @RequestParam("projectId") long projectId,
             @PathVariable long taskId,
             @RequestBody CommentDTO commentDTO
     ) {
@@ -77,20 +77,20 @@ public class TaskController {
 
     @PostMapping("/{taskId}/comments")
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ, T(PermissionType).WRITE])")
-    public ResponseEntity<CommentDTO> saveNewComment(@PathVariable long projectId, @PathVariable long taskId, @RequestBody CommentDTO commentDTO) {
+    public ResponseEntity<CommentDTO> saveNewComment(@RequestParam("projectId") long projectId, @PathVariable long taskId, @RequestBody CommentDTO commentDTO) {
         return ResponseEntity.ok(taskService.saveNewComment(commentDTO, taskId, projectId));
     }
 
     @PostMapping("/{taskId}/attachments")
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ, T(PermissionType).WRITE])")
-    public ResponseEntity<AttachmentDTO> saveNewAttachment(@PathVariable long projectId, @PathVariable long taskId, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+    public ResponseEntity<AttachmentDTO> saveNewAttachment(@RequestParam("projectId") long projectId, @PathVariable long taskId, @RequestParam("file") MultipartFile multipartFile) throws IOException {
         return ResponseEntity.ok(taskService.saveNewAttachment(multipartFile, projectId, taskId));
     }
 
     @GetMapping("/{taskId}/attachments/{attachmentId}")
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ])")
     public ResponseEntity<Resource> downloadAttachment(
-            @PathVariable long projectId,
+            @RequestParam("projectId") long projectId,
             @PathVariable long taskId,
             @PathVariable long attachmentId) throws IOException {
         Attachment attachment = taskService.downloadAttachment(projectId, taskId, attachmentId);
@@ -103,7 +103,7 @@ public class TaskController {
     @DeleteMapping("/{taskId}/attachments/{attachmentId}")
     @PreAuthorize("@permissionEvaluator.hasProjectPermission(#projectId, [T(PermissionType).READ, T(PermissionType).WRITE])")
     public ResponseEntity<String> deleteAttachment(
-            @PathVariable long projectId,
+            @RequestParam("projectId") long projectId,
             @PathVariable long taskId,
             @PathVariable long attachmentId) {
         taskService.deleteAttachment(taskId, attachmentId);

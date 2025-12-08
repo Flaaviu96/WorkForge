@@ -1,8 +1,6 @@
-package dev.workforge.app.WorkForge.security.impl;
+package dev.workforge.app.WorkForge.security;
 
 import dev.workforge.app.WorkForge.model.Permission;
-import dev.workforge.app.WorkForge.security.PermissionContext;
-import dev.workforge.app.WorkForge.security.PermissionContextOperation;
 
 
 import java.util.*;
@@ -11,15 +9,7 @@ import java.util.stream.Collectors;
 class PermissionContextImpl implements PermissionContext, PermissionContextOperation {
 
     private final Map<Long, Set<Permission>> permissionMap = new HashMap<>();
-    private long buildPermissionAt;
-    private long updatedPermission;
-
-    @Override
-    public void rebuildTimestamps() {
-        long now = System.currentTimeMillis();
-        this.buildPermissionAt = now;
-        this.updatedPermission = now;
-    }
+    private long version;
 
     @Override
     public void addPermission(Long projectId, Permission permission) {
@@ -49,6 +39,11 @@ class PermissionContextImpl implements PermissionContext, PermissionContextOpera
         permissionMap.clear();
     }
 
+    @Override
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
     public Map<Long, Set<Permission>> getPermissionMap() {
         return permissionMap.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -58,22 +53,7 @@ class PermissionContextImpl implements PermissionContext, PermissionContextOpera
     }
 
     @Override
-    public long getUpdatedPermission() {
-        return updatedPermission;
-    }
-
-    @Override
-    public long getBuildPermissionAt() {
-        return buildPermissionAt;
-    }
-
-    @Override
-    public void setUpdatedPermission(long updatePermissionAt) {
-        this.updatedPermission = updatePermissionAt;
-    }
-
-    @Override
-    public void setBuildPermissionAt(long buildPermissionAt) {
-        this.buildPermissionAt = buildPermissionAt;
+    public long getVersion() {
+        return version;
     }
 }

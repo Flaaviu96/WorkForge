@@ -1,7 +1,7 @@
 package dev.workforge.app.WorkForge.permission;
 
 import dev.workforge.app.WorkForge.model.PermissionType;
-import dev.workforge.app.WorkForge.security.model.UserPrincipal;
+import dev.workforge.app.WorkForge.security.UserPrincipal;
 import dev.workforge.app.WorkForge.service.other.AccessControlService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

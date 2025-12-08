@@ -25,7 +25,10 @@ public interface UserPermissionService {
       *
       * @param projectPermissionsDTO Data Transfer Object containing project and users permissions data
       */
-     void updateProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO);
+     void manageProjectPermissionsForUsers(ProjectPermissionsDTO projectPermissionsDTO);
+
+
+     void removeProjectPermissions(ProjectPermissionsDTO projectPermissionsDTO);
 
      /**
       * Creates default owner permissions for a given user on a specific project.

@@ -41,6 +41,7 @@ public class AppInitializer implements CommandLineRunner {
         this.abstractTriggerRepository = abstractTriggerRepository;
     }
 
+
     @Override
     public void run(String... args) throws Exception {
         List<State> states = createStates();

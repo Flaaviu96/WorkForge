@@ -6,12 +6,6 @@ import java.util.List;
 interface PermissionContextOperation {
 
     /**
-     * Rebuilds or updates internal timestamps related to the permission context.
-     * Typically used to refresh metadata such as last updated or built timestamps.
-     */
-    void rebuildTimestamps();
-
-    /**
      * Adds a single permission to the set of permissions for the specified project.
      *
      * @param projectId the ID of the project to which the permission will be added
@@ -46,4 +40,6 @@ interface PermissionContextOperation {
      * Clears the entire permission map, removing all permissions for all projects.
      */
     void clearMap();
+
+    void setVersion(long version);
 }

@@ -20,6 +20,6 @@ public class PermissionController {
 
     @PostMapping("/assign")
     public void assignPermissionToUser(@RequestBody ProjectPermissionsDTO projectPermissionsDTO) {
-        userPermissionService.updateProjectPermissionsForUsers(projectPermissionsDTO);
+        userPermissionService.manageProjectPermissionsForUsers(projectPermissionsDTO);
     }
 }
